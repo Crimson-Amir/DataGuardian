@@ -65,7 +65,6 @@ class ConnectProxy:
 
 # Operation section
 
-
 class AbstractFetch(ABC):
     def __init__(self, cursor, _size=2):
         self._cursor = cursor
@@ -92,8 +91,9 @@ class FetchMnay(AbstractFetch):
 
 
 class AbstractOperation(ABC):
-    def __init__(self, connect, fetch=FetchAll, _fetch_size=2):
-        self._connect = connect
+    def __init__(self, connection_pool, fetch=FetchAll, _fetch_size=2):
+        self._connection_pool = connection_pool
+        self._connect = self._connection_pool.getconn()
         self._fetch = fetch
         self._fetch_size = _fetch_size
 
@@ -103,11 +103,13 @@ class AbstractOperation(ABC):
 
 class QueryOperation(AbstractOperation):
     def execute(self, operations):
-        with self._connect:
-            with self._connect.cursor() as cursor:
-                cursor.execute(operations['query'], operations.get('params'))
-                return self._fetch(cursor, self._fetch_size).fetch()
-
+        try:
+            with self._connect:
+                with self._connect.cursor() as cursor:
+                    cursor.execute(operations['query'], operations.get('params'))
+                    return self._fetch(cursor, self._fetch_size).fetch()
+        finally:
+            BackConnectionToPool.back_to_pool(self._connection_pool, self._connect)
 
 class TransactionOperation(AbstractOperation):
     def execute(self, operations):
@@ -119,27 +121,38 @@ class TransactionOperation(AbstractOperation):
                 connection.commit()
 
         except Exception as e:
-            print(e)
+            print('Transaction Error', e)
             self._connect.rollback()
             raise
 
+        finally:
+            BackConnectionToPool.back_to_pool(self._connection_pool, self._connect)
 
 
-def main():
-    connect = ConnectProxy(db_name="my_shop",
-                           db_host="localhost",
-                           db_user="postgres",
-                           db_password="amir1383amir",
-                           db_port=2053).connect()
+class BackConnectionToPool:
+    @staticmethod
+    def back_to_pool(connection_pool, connection):
+        connection_pool.putconn(connection)
 
-    for _ in range(12):
-        create_con = connect.getconn()
-        QueryOperation(create_con).execute({'query': "select * from user_detail"})
-        connect.putconn(create_con)
-        print(_)
 
-    # a.execute({'query': "insert into user_detail (name) values (%s)", 'params': ('soka',)})
-    # print(b)
+def client(operation_type, operation, **kwargs):
+    connection_pool = ConnectProxy(**kwargs).connect()
 
-main()
+    operation_class = {
+        'query': QueryOperation,
+        'transaction': TransactionOperation
+    }
 
+    return operation_class[operation_type](connection_pool).execute(operation)
+
+
+a = client('query',
+           {'query': "select * from user_detail"},
+           db_name="my_shop",
+           db_host="localhost",
+           db_user="postgres",
+           db_password="amir1383amir",
+           db_port=2053)
+# a.execute({'query': "insert into user_detail (name) values (%s)", 'params': ('soka',)})
+
+print(a)
