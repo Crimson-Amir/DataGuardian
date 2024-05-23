@@ -59,13 +59,55 @@ class AbstractSubFactory(ABC):
 
 
 class CleanData:
-    def clean_result(self, result):
+
+    def get_host_ip(self, iter_value, max_try=1):
+        if max_try <= 10:
+
+            try:
+                return next(iter_value)[0][0][2]
+            except TypeError:
+                return self.get_host_ip(iter_value, max_try + 1)
+
+        else:
+            raise EOFError('The first 10 requests do not have correct results')
+
+    async def clean_ping_data(self, result):
+        final_result = {}
+
+        iter_value = iter(result.values())
+        host_ip = self.get_host_ip(iter_value)
+
         for key, value in result.items():
             country_domain = key.split('.')[0]
             country_number = country_domain[-1]
             country_name = country.get(country_domain[:-1])
-            print(country_name)
 
+            status_list, time_list, ok_request_count = [], [], 0
+            min_time, avg_time, max_time = 0, 0, 0
+
+            try:
+                for final in value[0]:
+                    status_list.append(final[0])
+                    time_list.append(final[1])
+
+                ok_request_count = len(list(filter(lambda x: x == 'OK', status_list)))
+                min_time = min(time_list)
+                avg_time = sum(time_list) / len(time_list)
+                max_time = max(time_list)
+
+            except TypeError:
+                status_list = ['Bad Request']
+
+            final_result[f'{country_name} {country_number}'] = {
+                'host_ip': host_ip,
+                'status_list': status_list,
+                'ok_request_count': ok_request_count,
+                'min_time': min_time,
+                'avg_time': avg_time,
+                'max_time': max_time,
+            }
+
+        return final_result
 
 class PingFactory(AbstractSubFactory):
     endpoint = 'https://check-host.net/check-ping'
@@ -81,10 +123,9 @@ class PingFactory(AbstractSubFactory):
                 await asyncio.sleep(10)
 
                 get_result = await _check_result.check_result(result)
-                print(get_result)
-                create_task = asyncio.create_task(clean_data.clean_result(get_result))
+                create_task = asyncio.create_task(clean_data.clean_ping_data(get_result))
 
-                await asyncio.sleep(5)
+                await asyncio.sleep(2)
                 await create_task
 
 
@@ -101,6 +142,10 @@ class CheckResult:
             return request_list
 
 
-ping = PingFactory(1000)
-a = asyncio.run(ping.check())
-print(a)
+async def main():
+    ping_factory = PingFactory(max_nodes=10)
+    await ping_factory.check()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
