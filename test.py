@@ -1,9 +1,10 @@
-a = {'a': 1, 'b':2, 'c': 3}
+import requests
 
-def test(iter_val):
-    print(next(iter_val))
+headers = {
+    'Accept': 'application/json'
+}
 
-iter_val = iter(a)
-test(iter_val)
-test(iter_val)
-test(iter_val)
+a = requests.get('https://check-host.net/check-http?host=finland.ggkala.shop:2053', headers=headers)
+a = requests.get('https://check-host.net/check_result/19d6ce2ek123', headers=headers)
+
+print(a.json())
