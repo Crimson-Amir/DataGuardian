@@ -1,5 +1,3 @@
-hosts = ['https://finland.ggkala.shop:2053']
-
 headers = {
     'Accept': 'application/json'
 }

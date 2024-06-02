@@ -1,14 +1,18 @@
 from abc import ABC, abstractmethod
 import asyncio
 import aiohttp
-from utilities import country, headers, hosts
+from utilities import country, headers
+from urllib import parse
 
 
 class MakeRequests:
     def __init__(self, session):
         self._session = session
     async def get_request(self, endpoint, params=None):
-        async with self._session.get(endpoint, params=params, headers=headers) as request_result:
+
+        url = f'{endpoint}?{parse.urlencode(params, doseq=True)}' if params else endpoint
+
+        async with self._session.get(url, headers=headers) as request_result:
             results = await request_result.json()
             return results
 
@@ -121,41 +125,48 @@ class AbstractSubFactory(ABC):
     api_endpoint = 'https://check-host.net/check-'
 
     @abstractmethod
-    def __init__(self, max_nodes):
-        self._max_nodes = max_nodes
+    def __init__(self):
         self.endpoint = None
         self.clean_data = None
 
 
-    async def check(self, _hosts):
+    async def check(self, _host, **kwargs):
+        """
+        :param _host: ip or address ypu want to check
+        :param kwargs:
+        max_nodes: get random country check with limit you enter here
+        node: list of country you want like: ['us1.node.check-host.net', 'ch1.node.check-host.net']
+        """
         endpoint = self.api_endpoint + self.endpoint
 
         async with aiohttp.ClientSession() as session:
             make_requests = MakeRequests(session)
             _check_result = CheckResult()
 
-            for parameter in _hosts:
-                result = await make_requests.get_request(endpoint, {'host': parameter, 'max_nodes': self._max_nodes})
-                await asyncio.sleep(10)
 
-                get_result = await _check_result.check_result(result)
-                create_task = asyncio.create_task(self.clean_data(get_result))
+            result = await make_requests.get_request(endpoint, params={'host': _host, **kwargs})
 
-                await asyncio.sleep(2)
-                await create_task
+            first_dict_value = next(iter(kwargs.values()))
+            sleep_secon = len(first_dict_value) if isinstance(first_dict_value, list) else first_dict_value
+
+            await asyncio.sleep(sleep_secon)
+
+            get_result = await _check_result.check_result(result)
+            create_task = asyncio.create_task(self.clean_data(get_result))
+
+            await asyncio.sleep(2)
+            await create_task
 
 
 class PingFactory(AbstractSubFactory):
-    def __init__(self, max_nodes):
-        super().__init__(max_nodes)
+    def __init__(self):
         clean_data = CleanPingFactory()
         self.endpoint = 'ping'
         self.clean_data = clean_data.clean_data
 
 
 class HttpFactory(AbstractSubFactory):
-    def __init__(self, max_nodes):
-        super().__init__(max_nodes)
+    def __init__(self):
         clean_data = CleanHttpFactory()
         self.endpoint = 'http'
         self.clean_data = clean_data.clean_data
@@ -180,10 +191,16 @@ class CheckResult:
             return request_list
 
 
-async def main():
-    ping_factory = HttpFactory(max_nodes=10)
-    await ping_factory.check(hosts)
+async def cleant(**kwargs):
+    ping_factory = PingFactory()
+    await ping_factory.check(**kwargs)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(
+        cleant(
+            _host='finland.ggkala.shop',
+            node=[f'ir{number}.node.check-host.net' for number in range(10)],
+            max_nodes=1
+        )
+    )
