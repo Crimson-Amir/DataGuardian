@@ -191,15 +191,16 @@ class CheckResult:
             return request_list
 
 
-async def cleant(**kwargs):
-    ping_factory = PingFactory()
+async def cleant(check, **kwargs):
+    ping_factory = check()
     await ping_factory.check(**kwargs)
 
 
 if __name__ == "__main__":
     asyncio.run(
         cleant(
-            _host='finland.ggkala.shop',
+            check=HttpFactory,
+            _host='finland.ggkala.shop:2053',
             node=[f'ir{number}.node.check-host.net' for number in range(10)],
             max_nodes=1
         )
