@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import asyncio
 import aiohttp
-from utilities import country, headers
+from checkHostApi_utilities import country, headers
 from urllib import parse
 
 

@@ -112,12 +112,12 @@ class QueryOperation(AbstractOperation):
             BackConnectionToPool.back_to_pool(self._connection_pool, self._connect)
 
 class TransactionOperation(AbstractOperation):
-    def execute(self, operations):
+    def execute(self, operations: list):
         try:
             with self._connect as connection:
                 with self._connect.cursor() as cursor:
-                    for _operation in [operations]:
-                        cursor.execute(_operation['query'], _operation['params'])
+                    for _operation in operations:
+                        cursor.execute(_operation['query'], _operation.get('params'))
                 connection.commit()
 
         except Exception as e:
@@ -135,24 +135,14 @@ class BackConnectionToPool:
         connection_pool.putconn(connection)
 
 
-def client(operation_type, operation, **kwargs):
-    connection_pool = ConnectProxy(**kwargs).connect()
+class Client:
+    def __init__(self, **kwargs):
+        self._connection_pool = ConnectProxy(**kwargs).connect()
 
-    operation_class = {
-        'query': QueryOperation,
-        'transaction': TransactionOperation
-    }
+    def execute(self, operation_type, operation):
+        operation_class = {
+            'query': QueryOperation,
+            'transaction': TransactionOperation
+        }
 
-    return operation_class[operation_type](connection_pool).execute(operation)
-
-
-a = client('query',
-           {'query': "select * from user_detail"},
-           db_name="my_shop",
-           db_host="localhost",
-           db_user="postgres",
-           db_password="amir1383amir",
-           db_port=2053)
-# a.execute({'query': "insert into user_detail (name) values (%s)", 'params': ('soka',)})
-
-print(a)
+        return operation_class[operation_type](self._connection_pool).execute(operation)
