@@ -3,8 +3,9 @@ from create_database import create
 create()
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, ConversationHandler, MessageHandler, filters, CallbackQueryHandler
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler
 from private import telegram_bot_token
+from ip_guardian import ip_guardian_menu, add_ip_conversation
 
 
 logging.basicConfig(
@@ -17,14 +18,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_detail = update.effective_chat
     try:
         ft_instance = FindText(update, context, notify_user=False)
-        text = await ft_instance.find_text('start_menu_text')
+        text = await ft_instance.find_text('start_menu')
         main_keyboard = [
-            [InlineKeyboardButton(await ft_instance.find_text('main_menu_keyboard_ip_guardian'), callback_data='ip_guardian'),
-             InlineKeyboardButton(await ft_instance.find_text('main_menu_keyboard_virtualizor'), callback_data='virtualizor')],
-            [InlineKeyboardButton(await ft_instance.find_text('keyboard_setting'), callback_data='setting')],
+            [InlineKeyboardButton(await ft_instance.find_keyboard('main_menu_ip_guardian'), callback_data='ip_guardian_menu'),
+             InlineKeyboardButton(await ft_instance.find_keyboard('main_menu_virtualizor'), callback_data='virtualizor')],
+            [InlineKeyboardButton(await ft_instance.find_keyboard('setting'), callback_data='setting')],
         ]
         if update.callback_query:
-            await update.callback_query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(main_keyboard), parse_mode='htnl')
+            await update.callback_query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(main_keyboard), parse_mode='html')
             return
         await context.bot.send_message(chat_id=user_detail.id, text=text, reply_markup=InlineKeyboardMarkup(main_keyboard), parse_mode='html')
 
@@ -58,10 +59,16 @@ async def register_user(update, context):
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(telegram_bot_token).build()
-    application.add_handler(CommandHandler('start', start))
 
+    # start section
+    application.add_handler(CommandHandler('start', start))
     application.add_handler(CallbackQueryHandler(register_user, pattern='register_user_(.*)'))
     application.add_handler(CallbackQueryHandler(start, pattern='main_menu'))
+
+    # ip guardian
+    application.add_handler(CallbackQueryHandler(ip_guardian_menu, pattern='ip_guardian_menu'))
+    application.add_handler(add_ip_conversation)
+
     # application.job_queue.run_repeating(notification_job, interval=check_every_min * 60, first=0)
 
     application.run_polling()
