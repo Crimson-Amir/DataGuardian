@@ -1,3 +1,5 @@
+import copy
+
 from utilities import FindText, handle_error, posgres_manager, handle_conversetion_error
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler, CallbackQueryHandler, filters, MessageHandler
@@ -5,7 +7,15 @@ from api.checkHostApi import client, PingFactory, CleanPingFactory
 from language import countries_and_flags
 
 GET_IP = 0
+ip_block_list = []
 calcuate_percentage_formula = lambda a, b: round((a / b) * 100, 2)
+
+
+class FakeUpdate:
+    callback_query = None
+    class effective_chat:
+        id = None
+
 
 @handle_error
 async def ip_guardian_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -67,6 +77,11 @@ message_for_update = {}
 async def get_ip(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_chat.id
     address = update.message.text
+    ft_instance = FindText(update, context)
+    if address in ip_block_list:
+        await context.bot.send_message(chat_id=user_id, text=await ft_instance.find_text('ip_in_block_list'), parse_mode='html')
+        return ConversationHandler.END
+
     check_host_instance = await client(
         check=PingFactory,
         _host=address,
@@ -74,7 +89,6 @@ async def get_ip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return_request_id = True
     )
     context.job_queue.run_once(register_ip, when=15, name=str(user_id))
-    ft_instance = FindText(update, context)
     text = await ft_instance.find_text('waiting_for_check_ip')
     message_id = await context.bot.send_message(chat_id=user_id, text=text, parse_mode='html')
     message_for_update[str(user_id)] = [check_host_instance, message_id.message_id]
@@ -85,12 +99,17 @@ async def register_ip(context):
     job = context.job
     user_id = job.name
     result, message_id = message_for_update.pop(user_id)
+    update = FakeUpdate()
+    update.effective_chat.id = user_id
+    ft_instance = FindText(update, context)
     try:
         get_address_detail = await format_ping_checker_text(result)
         score_present = get_address_detail[2]
+        if score_present < 50:
+            ip_block_list.append(get_address_detail[3])
         await context.bot.edit_message_text(text=get_address_detail[1], chat_id=user_id, message_id=int(message_id))
     except Exception as e:
-        await context.bot.edit_message_text(text='Sorry, Somthing went Wrong!', chat_id=user_id, message_id=int(message_id))
+        await context.bot.edit_message_text(text=await ft_instance.find_text('user_error_message'), chat_id=user_id, message_id=int(message_id))
         print(e)
 
 
@@ -112,14 +131,14 @@ async def format_ping_checker_text(result):
     earned_score = result.get("general_score")
     general_scoer = result.get("number_of_country") * 4
     score_present = calcuate_percentage_formula(earned_score, general_scoer)
-
-    final_text = (f'Host IP: {next(iter(result.values())).get("host")}\n'
+    host_ip = next(iter(result.values())).get("host")
+    final_text = (f'Host IP: {host_ip}\n'
                   f'Points Received: {earned_score}/{general_scoer} ({score_present}%)\n\n')
     for key, value in result.items():
         if not isinstance(value, dict): continue
         final_text += (
-            f'{countries_and_flags.get(key.split('.')[0][:-1], "")} {key}: {value.get("ok_request_count")}/{len(value.get("status_list"))}'
+            f'{countries_and_flags.get(key.split(', ')[0], "")} {key}: {value.get("ok_request_count")}/{len(value.get("status_list"))}'
             f' | {round(value.get("min_time"), 2)} - {round(value.get("avg_time"), 2)} - {round(value.get("max_time"), 2)} '
             f'{status_emoji.get(value.get("ok_request_count"), 0)}\n')
-    return result, final_text, score_present
+    return result, final_text, score_present, host_ip
 

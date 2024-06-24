@@ -26,25 +26,32 @@ class FindText:
         if section == "keyboard": transaction = keyboard_transaction
         return transaction.get(text_key, 'user_error_message').get(language_code)
 
+    @staticmethod
+    async def get_language_from_database(user_id):
+        return posgres_manager.execute('query', {'query': 'SELECT language FROM UserDetail WHERE userID = %s', 'params': (user_id,)})
+
     async def find_user_language(self):
         user_id = self._update.effective_chat.id
         user_language = self._context.user_data.get('user_language')
         if not user_language:
-            get_user_language_from_db = posgres_manager.execute(
-                'query', {'query': 'SELECT language FROM UserDetail WHERE userID = %s', 'params': (user_id,)}
-            )
+            get_user_language_from_db = await self.get_language_from_database(user_id)
             if not get_user_language_from_db:
                 if self._notify_user:
                     await handle_error_message(self._update, self._context, message_text="Your info was't found, please register with /start command!")
                 raise UserNotFound()
             user_language = get_user_language_from_db[0][0]
-        self._context.user_data['user_language'] = user_language
+            self._context.user_data['user_language'] = user_language
         return user_language
 
     async def find_text(self, text_key):
         return await self.language_transaction(text_key, await self.find_user_language())
     async def find_keyboard(self, text_key):
         return await self.language_transaction(text_key, await self.find_user_language(), section='keyboard')
+    async def find_from_database(self, user_id, text_key, section='text'):
+        result = await self.get_language_from_database(user_id)
+        user_language = result[0][0]
+        return await self.language_transaction(text_key, user_language, section=section)
+
 
 async def report_problem_to_admin(msg):
     requests.post(url=telegram_bot_url, json={'chat_id': admin_chat_ids[0], 'text': msg})

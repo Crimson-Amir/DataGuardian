@@ -23,6 +23,10 @@ text_transaction = {
         'en': 'Wait a few second.\nChecking Address ...',
         'fa': 'درحال بررسی آدرس ...\nچندثانیه صبر کنید.'
     },
+    'ip_in_block_list': {
+        'en': 'Sorry this IP in block list!\nplease Try again later',
+        'fa': 'ببخشید این آیپی در بلاک لیست قرار دارد!\nبعدا دوباره تلاش کنید.'
+    },
 }
 
 keyboard_transaction = {
@@ -97,6 +101,7 @@ countries_and_flags = {
     "Chad": "🇹🇩",
     "Chile": "🇨🇱",
     "China": "🇨🇳",
+    "Hong Kong": "🇨🇳",
     "Colombia": "🇨🇴",
     "Comoros": "🇰🇲",
     "Congo, Democratic Republic of the": "🇨🇩",
@@ -105,7 +110,7 @@ countries_and_flags = {
     "Croatia": "🇭🇷",
     "Cuba": "🇨🇺",
     "Cyprus": "🇨🇾",
-    "Czech Republic": "🇨🇿",
+    "Czechia": "🇨🇿",
     "Denmark": "🇩🇰",
     "Djibouti": "🇩🇯",
     "Dominica": "🇩🇲",
@@ -244,9 +249,9 @@ countries_and_flags = {
     "Tuvalu": "🇹🇻",
     "Uganda": "🇺🇬",
     "Ukraine": "🇺🇦",
-    "United Arab Emirates": "🇦🇪",
-    "United Kingdom": "🇬🇧",
-    "United States": "🇺🇸",
+    "UAE": "🇦🇪",
+    "UK": "🇬🇧",
+    "USA": "🇺🇸",
     "Uruguay": "🇺🇾",
     "Uzbekistan": "🇺🇿",
     "Vanuatu": "🇻🇺",
