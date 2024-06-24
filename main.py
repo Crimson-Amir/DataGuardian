@@ -7,7 +7,6 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Callb
 from private import telegram_bot_token
 from ip_guardian import ip_guardian_menu, add_ip_conversation
 
-
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -49,8 +48,7 @@ async def register_user(update, context):
     user_referral_code = context.user_data.get('register_user_referral_code')
     posgres_manager.execute(
         'transaction', [
-            {'query':
-                 'INSERT INTO UserDetail (first_name,last_name,username,userID,entered_with_refral_link,language) VALUES (%s,%s,%s,%s,%s,%s)',
+            {'query': 'INSERT INTO UserDetail (first_name,last_name,username,userID,entered_with_refral_link,language) VALUES (%s,%s,%s,%s,%s,%s)',
              'params':
                  (user_detail.first_name, user_detail.last_name, user_detail.username, user_detail.id, user_referral_code, selected_language)
              }])
