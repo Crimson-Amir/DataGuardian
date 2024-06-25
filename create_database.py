@@ -40,8 +40,35 @@ list_of_commands = [
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user FOREIGN KEY (userID) REFERENCES UserDetail(userID) ON DELETE CASCADE,
     CONSTRAINT unique_user_address UNIQUE (userID, address)
-);"""
- },
+);"""},
+
+
+{'query': """
+    CREATE TABLE IF NOT EXISTS Country (
+    countryID SERIAL PRIMARY KEY,
+    country_name VARCHAR(50) NOT NULL,
+    country_short_name VARCHAR(10),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);"""},
+
+
+{'query': """
+    CREATE TABLE IF NOT EXISTS AddressNotification (
+    notifID SERIAL PRIMARY KEY,
+    score_percent_notification SMALLINT DEFAULT 50,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_address FOREIGN KEY (addressID) REFERENCES Address(addressID) ON DELETE CASCADE,
+    CONSTRAINT score_notif_min_max CHECK (score_percent_notification >= 0 AND score_percent_notification <= 100)
+);"""},
+
+
+{'query': """
+    CREATE TABLE IF NOT EXISTS Address_Country_Relation (
+    countryID SERIAL PRIMARY KEY,
+    notifID SERIAL PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT country_notif UNIQUE (countryID, notifID)
+);"""},
 
 
 {'query': """
