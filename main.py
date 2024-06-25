@@ -6,6 +6,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler
 from private import telegram_bot_token
 from ip_guardian import ip_guardian_menu, add_ip_conversation
+from setting import setting_menu, ip_guardian_setting_menu
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -21,7 +22,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         main_keyboard = [
             [InlineKeyboardButton(await ft_instance.find_keyboard('main_menu_ip_guardian'), callback_data='ip_guardian_menu'),
              InlineKeyboardButton(await ft_instance.find_keyboard('main_menu_virtualizor'), callback_data='virtualizor')],
-            [InlineKeyboardButton(await ft_instance.find_keyboard('setting'), callback_data='setting')],
+            [InlineKeyboardButton(await ft_instance.find_keyboard('setting'), callback_data='setting_menu')],
         ]
         if update.callback_query:
             await update.callback_query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(main_keyboard), parse_mode='html')
@@ -66,6 +67,10 @@ if __name__ == '__main__':
     # ip guardian
     application.add_handler(CallbackQueryHandler(ip_guardian_menu, pattern='ip_guardian_menu'))
     application.add_handler(add_ip_conversation)
+
+    # setting
+    application.add_handler(CallbackQueryHandler(setting_menu, pattern='setting_menu'))
+    application.add_handler(CallbackQueryHandler(ip_guardian_setting_menu, pattern='ip_guardian_setting_menu'))
 
     # application.job_queue.run_repeating(notification_job, interval=check_every_min * 60, first=0)
 

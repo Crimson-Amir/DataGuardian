@@ -8,6 +8,16 @@ from telegram.ext import ConversationHandler
 
 default_language = 'en'
 posgres_manager = Client(**database_detail)
+status_emoji = {0: '❌', 1: '🔴', 2: '🟠', 3: '🟡', 4: '🟢'}
+status_range_emoji = {0: '❌', range(1, 50): '🔴', range(50, 70): '🟠', range(70, 85): '🟡', range(85, 100 + 1): '🟢'}
+
+def get_range_emoji(value):
+    if value in status_range_emoji:
+        return status_range_emoji[value]
+    for key in status_range_emoji:
+        if isinstance(key, range) and value in key:
+            return status_range_emoji[key]
+    return None
 
 class UserNotFound(Exception):
     def __init__(self):

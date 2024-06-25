@@ -31,13 +31,15 @@ list_of_commands = [
 
 
 {'query': """
-    CREATE TABLE IF NOT EXISTS IP_Address (
-    ipID SERIAL PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS Address (
+    addressID SERIAL PRIMARY KEY,
     userID BIGINT NOT NULL,
-    ip_address VARCHAR(100) NOT NULL UNIQUE, 
-    request_id VARCHAR(50), 
+    address VARCHAR(100) NOT NULL,
+    address_name VARCHAR(100),
+    score_percent SMALLINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_user FOREIGN KEY (userID) REFERENCES UserDetail(userID) ON DELETE CASCADE
+    CONSTRAINT fk_user FOREIGN KEY (userID) REFERENCES UserDetail(userID) ON DELETE CASCADE,
+    CONSTRAINT unique_user_address UNIQUE (userID, address)
 );"""
  },
 
@@ -66,4 +68,5 @@ def create():
     # print(result)
 
 # create()
-# a.execute('transaction', [{'query': 'drop table UserDetail', 'params': None}])
+# print(a.execute('transaction', [{'query': 'drop table Address', 'params': None}]))
+#

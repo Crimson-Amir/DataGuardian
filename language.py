@@ -11,21 +11,41 @@ text_transaction = {
         'en': 'Select the section you want:',
         'fa': 'بخش مورد نظر را انتخاب کنید:'
     },
-    'add_ip_conversation': {
+    'select_address': {
+        'en': 'Select the address:',
+        'fa': 'آدرس مود نظر را انتخاب کنید:'
+    },
+    'add_address_conversation': {
         'en': 'Please Send IP or Domain address.',
         'fa': 'لطفا آدرس آیپی یا دامنه را بفرستید'
+    },
+    'there_is_no_address': {
+        'en': 'you have not register any address.\nAdd new address with below button',
+        'fa': 'شما آدرسی ثبت نکردید!\nبا گزینه زیر یک آدرس جدید ثبت کنید'
     },
     'cancel_message': {
         'en': 'Conversation Canceled!',
         'fa': 'کانورسیشن بسته شد!'
     },
-    'waiting_for_check_ip': {
-        'en': 'Wait a few second.\nChecking Address ...',
-        'fa': 'درحال بررسی آدرس ...\nچندثانیه صبر کنید.'
+    'waiting_for_check_address': {
+        'en': 'Wait a few second ⏳\nChecking Address ...',
+        'fa': 'چندثانیه صبر کنید ⏳\nدرحال بررسی آدرس ...'
     },
-    'ip_in_block_list': {
+    'address_in_block_list': {
         'en': 'Sorry this IP in block list!\nplease Try again later',
         'fa': 'ببخشید این آیپی در بلاک لیست قرار دارد!\nبعدا دوباره تلاش کنید.'
+    },
+    'address_score_not_enough': {
+        'en': 'Address score not enough To register in BOT!\nIf you believe this is a mistake, please call support.',
+        'fa': 'آدرس امتیاز کافی برای ثبت شدن داخل ربات را دریافت نکرد!\nاگر فکر میکنید این یک اشتباه است، لطفا با پشتیبانی در ارتباط باشید.'
+    },
+    'address_register_successfull': {
+        'en': 'Address register in BOT successfull✅',
+        'fa': 'آدرس امتیاز کافی برای ثبت شدن داخل ربات را دریافت نکرد!\nاگر فکر میکنید این یک اشتباه است، لطفا با پشتیبانی در ارتباط باشید.'
+    },
+    'address_is_not_unique': {
+        'en': 'You have already register this address and you can not register it again❌',
+        'fa': 'شما قبلا این آدرس را اضافه کردید و نمیتوانید دوباره این کار را انجام دهید❌'
     },
 }
 
@@ -61,6 +81,10 @@ keyboard_transaction = {
     'cancel_button': {
         'en': 'Cancel ✘',
         'fa': 'انصراف ✘'
+    },
+    'ip_guardian_setting': {
+        'en': 'IpGuadian Settings',
+        'fa': 'تنظیمات آیپی گاردین'
     }
 }
 
