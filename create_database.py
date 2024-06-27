@@ -29,7 +29,6 @@ list_of_commands = [
 );
 """},
 
-
 {'query': """
     CREATE TABLE IF NOT EXISTS Address (
     addressID SERIAL PRIMARY KEY,
@@ -42,58 +41,111 @@ list_of_commands = [
     CONSTRAINT unique_user_address UNIQUE (userID, address)
 );"""},
 
-
 {'query': """
     CREATE TABLE IF NOT EXISTS Country (
     countryID SERIAL PRIMARY KEY,
     country_name VARCHAR(50) NOT NULL,
     country_short_name VARCHAR(10),
+    city VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );"""},
-
 
 {'query': """
     CREATE TABLE IF NOT EXISTS AddressNotification (
     notifID SERIAL PRIMARY KEY,
+    addressID SMALLINT NOT NULL,
     score_percent_notification SMALLINT DEFAULT 50,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_address FOREIGN KEY (addressID) REFERENCES Address(addressID) ON DELETE CASCADE,
     CONSTRAINT score_notif_min_max CHECK (score_percent_notification >= 0 AND score_percent_notification <= 100)
 );"""},
 
-
 {'query': """
-    CREATE TABLE IF NOT EXISTS Address_Country_Relation (
-    countryID SERIAL PRIMARY KEY,
-    notifID SERIAL PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS AddressNotification_Country_Relation (
+    status BOOLEAN DEFAULT FALSE,
+    countryID SMALLINT REFERENCES Country(countryID),
+    notifID SMALLINT REFERENCES AddressNotification(notifID),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT country_notif UNIQUE (countryID, notifID)
+    CONSTRAINT country_notif PRIMARY KEY (countryID, notifID)
 );"""},
 
+]
 
-{'query': """
-    CREATE TABLE IF NOT EXISTS Invoice (
-    invoiceID SERIAL PRIMARY KEY,
-    userID BIGINT NOT NULL,
-    course_ID BIGINT,
-    discountID SMALLINT DEFAULT NULL,
-    amount BIGINT NOT NULL,
-    discount BIGINT DEFAULT 0,
-    payment_status VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    payment_method VARCHAR(50),
-    payment_for VARCHAR(50),
-    CONSTRAINT fk_user FOREIGN KEY (userID) REFERENCES UserDetail(userID) ON DELETE CASCADE,
-    CONSTRAINT fk_course FOREIGN KEY (course_ID) REFERENCES Course(courseID) ON DELETE CASCADE,
-    CONSTRAINT fk_discount FOREIGN KEY (discountID) REFERENCES DiscountCode(discountID) ON DELETE CASCADE
-);"""},
 
+init_country = [
+    {'query': """
+    INSERT INTO Country (country_name, country_short_name, city) VALUES
+    ('United Arab Emirates', 'AE', 'Dubai'),
+    ('Bulgaria', 'BG', 'Sofia'),
+    ('Brazil', 'BR', 'Sao Paulo'),
+    ('Switzerland', 'CH', 'Zurich'),
+    ('Czechia', 'CZ', 'C.Budejovice'),
+    ('Germany', 'DE', 'Nuremberg'),
+    ('Germany', 'DE', 'Frankfurt'),
+    ('Spain', 'ES', 'Barcelona'),
+    ('Finland', 'FI', 'Helsinki'),
+    ('France', 'FR', 'Paris'),
+    ('Hong Kong', 'HK', 'Hong Kong'),
+    ('Croatia', 'HR', 'Sisak'),
+    ('Israel', 'IL', 'Tel Aviv'),
+    ('Israel', 'IL', 'Netanya'),
+    ('India', 'IN', 'Mumbai'),
+    ('Iran', 'IR', 'Tehran'),
+    ('Iran', 'IR', 'Shiraz'),
+    ('Iran', 'IR', 'Esfahan'),
+    ('Iran', 'IR', 'Karaj'),
+    ('Italy', 'IT', 'Milan'),
+    ('Japan', 'JP', 'Tokyo'),
+    ('Kazakhstan', 'KZ', 'Karaganda'),
+    ('Lithuania', 'LT', 'Vilnius'),
+    ('Moldova', 'MD', 'Chisinau'),
+    ('Netherlands', 'NL', 'Amsterdam'),
+    ('Netherlands', 'NL', 'Meppel'),
+    ('Poland', 'PL', 'Poznan'),
+    ('Poland', 'PL', 'Warsaw'),
+    ('Portugal', 'PT', 'Viana'),
+    ('Serbia', 'RS', 'Belgrade'),
+    ('Russia', 'RU', 'Moscow'),
+    ('Russia', 'RU', 'Saint Petersburg'),
+    ('Russia', 'RU', 'Ekaterinburg'),
+    ('Sweden', 'SE', 'Tallberg'),
+    ('Turkey', 'TR', 'Istanbul'),
+    ('Turkey', 'TR', 'Gebze'),
+    ('Ukraine', 'UA', 'Khmelnytskyi'),
+    ('Ukraine', 'UA', 'Kyiv'),
+    ('Ukraine', 'UA', 'SpaceX Starlink'),
+    ('United Kingdom', 'GB', 'Coventry'),
+    ('United States', 'US', 'Chicago'),
+    ('United States', 'US', 'Dallas'),
+    ('United States', 'US', 'Atlanta');
+    """}
 ]
 
 def create():
     a.execute('transaction', list_of_commands)
     # print(result)
 
+def init_country_to_db():
+    a.execute('transaction', init_country)
+
+# init_country_to_db()
 # create()
-# print(a.execute('transaction', [{'query': 'drop table Address', 'params': None}]))
+# print(a.execute('transaction', [{'query': 'drop table Country', 'params': None}]))
 #
+
+# {'query': """
+#     CREATE TABLE IF NOT EXISTS Invoice (
+#     invoiceID SERIAL PRIMARY KEY,
+#     userID BIGINT NOT NULL,
+#     course_ID BIGINT,
+#     discountID SMALLINT DEFAULT NULL,
+#     amount BIGINT NOT NULL,
+#     discount BIGINT DEFAULT 0,
+#     payment_status VARCHAR(50) NOT NULL,
+#     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+#     payment_method VARCHAR(50),
+#     payment_for VARCHAR(50),
+#     CONSTRAINT fk_user FOREIGN KEY (userID) REFERENCES UserDetail(userID) ON DELETE CASCADE,
+#     -- CONSTRAINT fk_course FOREIGN KEY (course_ID) REFERENCES Course(courseID) ON DELETE CASCADE
+#     -- CONSTRAINT fk_discount FOREIGN KEY (discountID) REFERENCES DiscountCode(discountID) ON DELETE CASCADE
+# );"""}

@@ -1,18 +1,13 @@
-from psycopg2 import errorcodes, errors
-from utilities import FindText, handle_error, posgres_manager, handle_conversetion_error, status_emoji, get_range_emoji
+from utilities import FindText, handle_error, handle_conversetion_error
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler, CallbackQueryHandler, filters, MessageHandler
-from api.checkHostApi import client, PingFactory, CleanPingFactory
-from language import countries_and_flags
+from api.checkHostApi import client, PingFactory
+from ipGuardian.ip_guardian_core import RegisterIP
 
 GET_IP = 0
-calcuate_percentage_formula = lambda a, b: round((a / b) * 100, 2)
-
 class FakeUpdate:
     callback_query = None
-    class effective_chat:
-        id = None
-
+    class effective_chat: id = None
 
 @handle_error
 async def ip_guardian_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -84,7 +79,7 @@ async def get_ip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         max_nodes=55,
         return_request_id = True
     )
-    context.job_queue.run_once(register_ip_class.register_ip, when=15, name=f'{user_id}_&_{address}')
+    context.job_queue.run_once(register_ip, when=15, name=f'{user_id}_&_{address}')
     text = await ft_instance.find_text('waiting_for_check_address')
     message_id = await context.bot.send_message(chat_id=user_id, text=text, parse_mode='html')
     register_ip_class.message_for_update[str(user_id)] = [check_host_instance, message_id.message_id]
@@ -102,75 +97,23 @@ add_ip_conversation = ConversationHandler(
     conversation_timeout=1500,
 )
 
+async def register_ip(context):
+    job_name = context.job.name.split('_&_')
+    user_id = job_name[0]
+    address = job_name[1]
+    update = FakeUpdate().effective_chat.id = user_id
+    ft_instance = FindText(update, context)
 
-class Singleton(type):
-    _instance = {}
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instance:
-            cls._instance[cls] = super().__call__(*args, **kwargs)
-        return cls._instance[cls]
+    register_ip_class = RegisterIP()
+    register = await register_ip_class.register_ip(user_id, address)
+    message_id = register.get('message_id')
+    address_detail_text = register.get('address_detail_text', '')
 
-class RegisterIP(metaclass=Singleton):
-    message_for_update = {}
-    ip_block_list = []
+    if register.get('status', 0):
+        text = await ft_instance.find_from_database(user_id, register.get('msg', 'user_error_message'))
+        await context.bot.edit_message_text(
+            text=text + f'\n\n{address_detail_text}', chat_id=user_id, message_id=message_id)
+        return
 
-    @staticmethod
-    async def register_to_database(user_id, address, score_percent):
-        posgres_manager.execute(
-            'transaction', [{
-                'query': 'INSERT INTO Address (userID,address,address_name,score_percent) VALUES (%s,%s,%s,%s)',
-                'params': (int(user_id), address, address, score_percent)}]
-        )
-    async def register_ip(self, context):
-        job_name = context.job.name.split('_&_')
-        user_id = job_name[0]
-        address = job_name[1]
-        result, message_id = self.message_for_update.pop(user_id)
-        update = FakeUpdate().effective_chat.id = user_id
-        ft_instance = FindText(update, context)
-        get_address_detail = await self.format_ping_checker_text(result)
-        try:
-            if not get_address_detail: raise ValueError
-            score_present, address_detail_text = get_address_detail[2], get_address_detail[1]
-            if score_present < 50:
-                self.ip_block_list.append(address)
-                text = await ft_instance.find_from_database(user_id, 'address_score_not_enough')
-                await context.bot.edit_message_text(text=text + f'\n\n{address_detail_text}', chat_id=user_id, message_id=int(message_id))
-                return
-            text = await ft_instance.find_from_database(user_id, 'address_register_successfull')
-            await self.register_to_database(user_id, address, score_present)
-            await context.bot.edit_message_text(text=text + f'\n\n{address_detail_text}', chat_id=user_id, message_id=int(message_id))
-
-        except errors.lookup(errorcodes.UNIQUE_VIOLATION):
-            await context.bot.edit_message_text(text=await ft_instance.find_from_database(user_id, 'address_is_not_unique'), chat_id=user_id, message_id=int(message_id))
-            self.ip_block_list.append(address)
-        except Exception as e:
-            await context.bot.edit_message_text(text=await ft_instance.find_from_database(user_id, 'user_error_message'), chat_id=user_id, message_id=int(message_id))
-            print(e)
-
-    @staticmethod
-    async def find_ip_host(result):
-        iterable_host = iter(result.values())
-        host_ip = 'no ip found'
-        for i in range(10):
-            host_ip = next(iterable_host).get("host")
-            if host_ip != 'no ip found': break
-        return host_ip
-
-    async def format_ping_checker_text(self, result):
-        get_result = CleanPingFactory()
-        result = await get_result.clean_data(result)
-        earned_score = result.get("general_score")
-        general_scoer = result.get("number_of_country") * 4
-        score_present = calcuate_percentage_formula(earned_score, general_scoer)
-        host_ip = await self.find_ip_host(result)
-        if host_ip == 'no hip found': raise ValueError
-        final_text = (f'Host IP: {host_ip}\n'
-                      f'Points Received: {earned_score}/{general_scoer} ({score_present}% {get_range_emoji(int(score_present))})\n\n')
-        for key, value in result.items():
-            if not isinstance(value, dict): continue
-            final_text += (
-                f'{countries_and_flags.get(key.split(', ')[0], "")} {key}: {value.get("ok_request_count")}/{len(value.get("status_list"))}'
-                f' | {round(value.get("min_time"), 2)} - {round(value.get("avg_time"), 2)} - {round(value.get("max_time"), 2)} '
-                f'{status_emoji.get(value.get("ok_request_count"), 0)}\n')
-        return result, final_text, score_present, host_ip
+    erro_msg = await ft_instance.find_from_database(user_id, register.get('error', ''))
+    await context.bot.edit_message_text(text=erro_msg + f'\n\n{address_detail_text}', chat_id=user_id, message_id=message_id)

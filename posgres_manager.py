@@ -104,8 +104,8 @@ class AbstractOperation(ABC):
 class QueryOperation(AbstractOperation):
     def execute(self, operations):
         try:
-            with self._connect:
-                with self._connect.cursor() as cursor:
+            with self._connect as connection:
+                with connection.cursor() as cursor:
                     cursor.execute(operations['query'], operations.get('params'))
                     return self._fetch(cursor, self._fetch_size).fetch()
         finally:
@@ -113,13 +113,16 @@ class QueryOperation(AbstractOperation):
 
 class TransactionOperation(AbstractOperation):
     def execute(self, operations: list):
+        fetch_list = []
         try:
             with self._connect as connection:
-                with self._connect.cursor() as cursor:
+                with connection.cursor() as cursor:
                     for _operation in operations:
                         cursor.execute(_operation['query'], _operation.get('params'))
-                connection.commit()
-
+                        if 'RETURNING' in _operation['query']:
+                            fetch_list.append(self._fetch(cursor, self._fetch_size).fetch())
+                    connection.commit()
+            return fetch_list
         except Exception as e:
             print('Transaction Error', e)
             self._connect.rollback()
@@ -127,6 +130,9 @@ class TransactionOperation(AbstractOperation):
 
         finally:
             BackConnectionToPool.back_to_pool(self._connection_pool, self._connect)
+
+class CustomOperation(AbstractOperation):
+    def execute(self, operations: list): return self._connect, BackConnectionToPool
 
 
 class BackConnectionToPool:
@@ -142,7 +148,8 @@ class Client:
     def execute(self, operation_type, operation):
         operation_class = {
             'query': QueryOperation,
-            'transaction': TransactionOperation
+            'transaction': TransactionOperation,
+            'custom': CustomOperation
         }
 
         return operation_class[operation_type](self._connection_pool).execute(operation)

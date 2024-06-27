@@ -23,6 +23,10 @@ text_transaction = {
         'en': 'you have not register any address.\nAdd new address with below button',
         'fa': 'شما آدرسی ثبت نکردید!\nبا گزینه زیر یک آدرس جدید ثبت کنید'
     },
+    'there_is_no_country': {
+        'en': 'There is no country!',
+        'fa': 'کشوری وجود ندارد!'
+    },
     'cancel_message': {
         'en': 'Conversation Canceled!',
         'fa': 'کانورسیشن بسته شد!'
@@ -32,8 +36,8 @@ text_transaction = {
         'fa': 'چندثانیه صبر کنید ⏳\nدرحال بررسی آدرس ...'
     },
     'address_in_block_list': {
-        'en': 'Sorry this IP in block list!\nplease Try again later',
-        'fa': 'ببخشید این آیپی در بلاک لیست قرار دارد!\nبعدا دوباره تلاش کنید.'
+        'en': 'You can not add this address right now\nplease Try again later',
+        'fa': 'درحال حاضر نمیتوانید این آدرس را اضافه کنید!\nلطفا بعدا تلاش کنید.'
     },
     'address_score_not_enough': {
         'en': 'Address score not enough To register in BOT!\nIf you believe this is a mistake, please call support.',
@@ -41,11 +45,23 @@ text_transaction = {
     },
     'address_register_successfull': {
         'en': 'Address register in BOT successfull✅',
-        'fa': 'آدرس امتیاز کافی برای ثبت شدن داخل ربات را دریافت نکرد!\nاگر فکر میکنید این یک اشتباه است، لطفا با پشتیبانی در ارتباط باشید.'
+        'fa': 'آدرس با موفقیت در ربات ثبت شد✅'
     },
     'address_is_not_unique': {
         'en': 'You have already register this address and you can not register it again❌',
         'fa': 'شما قبلا این آدرس را اضافه کردید و نمیتوانید دوباره این کار را انجام دهید❌'
+    },
+    'select_country': {
+        'en': 'Select the countries where you will be notified when the IP is restricted in that.',
+        'fa': 'کشورهایی را انتخاب کنید که با محدود شدن آیپی در آن ها، نوتیفیکشن دریافت کنید.'
+    },
+    'operation_successfull': {
+        'en': 'The operation successful✅',
+        'fa': 'عملیات با موفقیت انجام شد✅'
+    },
+    'somthing_wrong_in_address': {
+        'en': 'The operation not successful❌\nThere may have been a problem in address, re-register the address or contact support!',
+        'fa': 'عملیات موفقیت آمیز نبود!❌\nاحتمالا مشکلی در آدرس وجود دارد، آدرس را دوباره ثبت کنید یا با پشتیبانی تماس بگیرید'
     },
 }
 
@@ -274,8 +290,11 @@ countries_and_flags = {
     "Uganda": "🇺🇬",
     "Ukraine": "🇺🇦",
     "UAE": "🇦🇪",
+    "United Arab Emirates": "🇦🇪",
     "UK": "🇬🇧",
+    "United Kingdom": "🇬🇧",
     "USA": "🇺🇸",
+    "United States": "🇺🇸",
     "Uruguay": "🇺🇾",
     "Uzbekistan": "🇺🇿",
     "Vanuatu": "🇻🇺",

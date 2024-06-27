@@ -1,12 +1,11 @@
+from create_database import create; create()
 from utilities import FindText, handle_error, UserNotFound, posgres_manager
-from create_database import create
-create()
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler
 from private import telegram_bot_token
-from ip_guardian import ip_guardian_menu, add_ip_conversation
-from setting import setting_menu, ip_guardian_setting_menu
+from ipGuardian.ip_guardian import ip_guardian_menu, add_ip_conversation
+from setting import setting_menu, ip_guardian_setting_menu, address_setting, country_ping_notification
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -32,10 +31,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except UserNotFound:
         text = '<b>Please choose your language:</b>'
         context.user_data['register_user_referral_code'] = context.args[0] if context.args else None
-        keyboard = [
-            [InlineKeyboardButton('English', callback_data='register_user_en'),
-             InlineKeyboardButton('Farsi', callback_data='register_user_fa')]
-        ]
+        keyboard = [[InlineKeyboardButton('English', callback_data='register_user_en'),
+                     InlineKeyboardButton('Farsi', callback_data='register_user_fa')]]
         await context.bot.send_message(chat_id=user_detail.id, text=text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='html')
 
     except Exception as e:
@@ -50,8 +47,7 @@ async def register_user(update, context):
     posgres_manager.execute(
         'transaction', [
             {'query': 'INSERT INTO UserDetail (first_name,last_name,username,userID,entered_with_refral_link,language) VALUES (%s,%s,%s,%s,%s,%s)',
-             'params':
-                 (user_detail.first_name, user_detail.last_name, user_detail.username, user_detail.id, user_referral_code, selected_language)
+             'params': (user_detail.first_name, user_detail.last_name, user_detail.username, user_detail.id, user_referral_code, selected_language)
              }])
     return await start(update, context)
 
@@ -71,6 +67,8 @@ if __name__ == '__main__':
     # setting
     application.add_handler(CallbackQueryHandler(setting_menu, pattern='setting_menu'))
     application.add_handler(CallbackQueryHandler(ip_guardian_setting_menu, pattern='ip_guardian_setting_menu'))
+    application.add_handler(CallbackQueryHandler(address_setting, pattern='address_setting_(.*)'))
+    application.add_handler(CallbackQueryHandler(country_ping_notification, pattern='country_ping_notification_(.*)'))
 
     # application.job_queue.run_repeating(notification_job, interval=check_every_min * 60, first=0)
 

@@ -78,11 +78,12 @@ async def handle_error_message(update, context, message_text=None):
 
 def handle_error(func):
     @functools.wraps(func)
-    async def warpper(update, context):
+    async def warpper(update, context, **kwargs):
         user_detail = update.effective_chat
         try:
-            return await func(update, context)
+            return await func(update, context, **kwargs)
         except Exception as e:
+            if 'Message is not modified' in str(e): return await update.callback_query.answer()
             err = f"🔴 An error occurred in {func.__name__}:\n{str(e)}\nerror type: {type(e)}\nuser chat id: {user_detail.id}"
             await report_problem_to_admin(err)
             await handle_error_message(update, context)
