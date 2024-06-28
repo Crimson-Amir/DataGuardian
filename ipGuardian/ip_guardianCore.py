@@ -16,19 +16,19 @@ class RegisterIP(metaclass=Singleton):
     message_for_update, ip_block_list = {}, []
 
     async def register_to_database(self, user_id, address, score_percent):
-
-        connec, backtopool = posgres_manager.execute('custom', None)
+        connect, backtopool, connection_pool = posgres_manager.execute('custom', None)
         try:
-            with connec as connection:
+            with connect as connection:
                 with connection.cursor() as cursor:
                     cursor.execute('INSERT INTO Address (userID,address,address_name,score_percent) VALUES (%s,%s,%s,%s) RETURNING addressID', (int(user_id), address, address, score_percent))
                     address_id = cursor.fetchone()
-                    cursor.execute('INSERT INTO AddressNotification (addressID) VALUES (%s)', (address_id[0],))
+                    cursor.execute('INSERT INTO AddressNotification (userID,addressID) VALUES (%s,%s)', (user_id,address_id[0]))
                     connection.commit()
-        except Exception as e:
-            print('Transaction Error', e)
-            connec.rollback()
+        except Exception:
+            connect.rollback()
             raise
+        finally:
+            backtopool.back_to_pool(connection_pool, connect)
 
         self.ip_block_list.append(address)
 

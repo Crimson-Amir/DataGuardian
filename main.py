@@ -5,7 +5,9 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler
 from private import telegram_bot_token
 from ipGuardian.ip_guardian import ip_guardian_menu, add_ip_conversation
-from setting import setting_menu, ip_guardian_setting_menu, address_setting, country_ping_notification
+from userSetting import setting_menu, ip_guardian_setting_menu, address_setting, country_ping_notification
+from user.registerCore import RegisterUser
+from admin.adminTelegram import notify_admin
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -44,11 +46,8 @@ async def register_user(update, context):
     query = update.callback_query
     selected_language = query.data.replace('register_user_', '')
     user_referral_code = context.user_data.get('register_user_referral_code')
-    posgres_manager.execute(
-        'transaction', [
-            {'query': 'INSERT INTO UserDetail (first_name,last_name,username,userID,entered_with_refral_link,language) VALUES (%s,%s,%s,%s,%s,%s)',
-             'params': (user_detail.first_name, user_detail.last_name, user_detail.username, user_detail.id, user_referral_code, selected_language)
-             }])
+    await RegisterUser().register(user_detail, user_referral_code, selected_language)
+    await notify_admin(update, context, selected_language, user_referral_code)
     return await start(update, context)
 
 

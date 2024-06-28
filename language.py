@@ -63,6 +63,18 @@ text_transaction = {
         'en': 'The operation not successful❌\nThere may have been a problem in address, re-register the address or contact support!',
         'fa': 'عملیات موفقیت آمیز نبود!❌\nاحتمالا مشکلی در آدرس وجود دارد، آدرس را دوباره ثبت کنید یا با پشتیبانی تماس بگیرید'
     },
+    'register_country_count': {
+        'en': 'Registered countries: {}/{}',
+        'fa': 'تعداد کشورهای ثبت شده: 1/10'
+    },
+    'subscribe_for_more_access': {
+        'en': 'Subscribe for more access. /subscribe',
+        'fa': 'برای دسترسی های بالاتر اشتراک تهیه کنید. /subscribe'
+    },
+    'access_denied_for_register_country': {
+        'en': 'You can not register more country!\nremove some country or Subscribe for more access',
+        'fa': 'شما نمیتوانید کشور بیشتری اضافه کنید!\nکشورهای قبلی را حذف کنید یا اشتراک ویژه تهیه کنید'
+    },
 }
 
 keyboard_transaction = {

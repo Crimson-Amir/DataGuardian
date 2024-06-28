@@ -34,7 +34,7 @@ class FindText:
     async def language_transaction(text_key, language_code=default_language, section="text") -> str:
         transaction = text_transaction
         if section == "keyboard": transaction = keyboard_transaction
-        return transaction.get(text_key, 'user_error_message').get(language_code)
+        return transaction.get(text_key, 'user_error_message').get(language_code, 'en')
 
     @staticmethod
     async def get_language_from_database(user_id):

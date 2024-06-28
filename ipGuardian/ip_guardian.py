@@ -2,7 +2,7 @@ from utilities import FindText, handle_error, handle_conversetion_error
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler, CallbackQueryHandler, filters, MessageHandler
 from api.checkHostApi import client, PingFactory
-from ipGuardian.ip_guardian_core import RegisterIP
+from ipGuardian.ip_guardianCore import RegisterIP
 
 GET_IP = 0
 class FakeUpdate:

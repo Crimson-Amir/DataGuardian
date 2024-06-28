@@ -18,16 +18,33 @@ list_of_commands = [
     email VARCHAR(255) DEFAULT NULL,
     phone_number VARCHAR(15) DEFAULT NULL,
     credit BIGINT DEFAULT 0,
-    entered_with_refral_link BIGINT DEFAULT NULL,
+    entered_with_referral_link BIGINT DEFAULT NULL,
     number_of_invitations SMALLINT DEFAULT 0,
     registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT TRUE,
     referral_link VARCHAR(50),
     membership_status VARCHAR(50),
     discount_code VARCHAR(50),
-    CONSTRAINT fk_referral FOREIGN KEY (entered_with_refral_link) REFERENCES UserDetail(userID) ON DELETE CASCADE
+    CONSTRAINT fk_referral FOREIGN KEY (entered_with_referral_link) REFERENCES UserDetail(userID) ON DELETE CASCADE
 );
 """},
+
+{'query': """
+    CREATE TABLE IF NOT EXISTS Rank (
+    rankID SERIAL PRIMARY KEY,
+    rank_name VARCHAR(50) NOT NULL,
+    rank_score INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);"""},
+
+{'query': """
+    CREATE TABLE IF NOT EXISTS UserRank (
+    userID BIGINT PRIMARY KEY REFERENCES UserDetail(userID) ON DELETE CASCADE,
+    rankID SMALLINT REFERENCES Rank(rankID) ON DELETE CASCADE,
+    max_allow_ip_register SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
+    max_country_per_address SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);"""},
 
 {'query': """
     CREATE TABLE IF NOT EXISTS Address (
@@ -41,6 +58,20 @@ list_of_commands = [
     CONSTRAINT unique_user_address UNIQUE (userID, address)
 );"""},
 
+# ------------------------------------------------------------------------------------------
+
+{'query': """
+    CREATE TABLE IF NOT EXISTS AddressNotification (
+    notifID SERIAL PRIMARY KEY,
+    addressID INTEGER NOT NULL,
+    userID BIGINT NOT NULL,
+    score_percent_notification SMALLINT DEFAULT 50,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_address FOREIGN KEY (addressID) REFERENCES Address(addressID) ON DELETE CASCADE,
+    CONSTRAINT fk_user FOREIGN KEY (userID) REFERENCES UserDetail(userID) ON DELETE CASCADE,
+    CONSTRAINT score_notif_min_max CHECK (score_percent_notification >= 0 AND score_percent_notification <= 100)
+);"""},
+
 {'query': """
     CREATE TABLE IF NOT EXISTS Country (
     countryID SERIAL PRIMARY KEY,
@@ -51,16 +82,6 @@ list_of_commands = [
 );"""},
 
 {'query': """
-    CREATE TABLE IF NOT EXISTS AddressNotification (
-    notifID SERIAL PRIMARY KEY,
-    addressID SMALLINT NOT NULL,
-    score_percent_notification SMALLINT DEFAULT 50,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_address FOREIGN KEY (addressID) REFERENCES Address(addressID) ON DELETE CASCADE,
-    CONSTRAINT score_notif_min_max CHECK (score_percent_notification >= 0 AND score_percent_notification <= 100)
-);"""},
-
-{'query': """
     CREATE TABLE IF NOT EXISTS AddressNotification_Country_Relation (
     status BOOLEAN DEFAULT FALSE,
     countryID SMALLINT REFERENCES Country(countryID),
@@ -68,6 +89,8 @@ list_of_commands = [
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT country_notif PRIMARY KEY (countryID, notifID)
 );"""},
+
+# ------------------------------------------------------------------------------------------
 
 ]
 
@@ -121,14 +144,22 @@ init_country = [
     """}
 ]
 
+init_rank = [
+    {'query': """
+    INSERT INTO Rank (rank_name,rank_score) VALUES 
+    ('ROOKIE', 10)
+    """}
+]
+
 def create():
     a.execute('transaction', list_of_commands)
     # print(result)
 
-def init_country_to_db():
+def init():
     a.execute('transaction', init_country)
+    # a.execute('transaction', init_rank)
 
-# init_country_to_db()
+# init()
 # create()
 # print(a.execute('transaction', [{'query': 'drop table Country', 'params': None}]))
 #

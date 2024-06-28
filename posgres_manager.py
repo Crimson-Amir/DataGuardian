@@ -132,7 +132,7 @@ class TransactionOperation(AbstractOperation):
             BackConnectionToPool.back_to_pool(self._connection_pool, self._connect)
 
 class CustomOperation(AbstractOperation):
-    def execute(self, operations: list): return self._connect, BackConnectionToPool
+    def execute(self, operations: list): return self._connect, BackConnectionToPool, self._connection_pool
 
 
 class BackConnectionToPool:
