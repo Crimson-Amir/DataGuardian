@@ -2,7 +2,7 @@ import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utilities import posgres_manager
 
-rankID, max_allow_ip_register, max_country_per_address = 1, 2, 5
+rankID, max_allow_ip_register, max_country_per_address = 1, 2, 2
 
 class RegisterUser:
 

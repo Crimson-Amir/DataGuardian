@@ -20,7 +20,7 @@ class RegisterIP(metaclass=Singleton):
         try:
             with connect as connection:
                 with connection.cursor() as cursor:
-                    cursor.execute('INSERT INTO Address (userID,address,address_name,score_percent) VALUES (%s,%s,%s,%s) RETURNING addressID', (int(user_id), address, address, score_percent))
+                    cursor.execute('INSERT INTO Address (userID,address,address_name,last_score_percent) VALUES (%s,%s,%s,%s) RETURNING addressID', (int(user_id), address, address, score_percent))
                     address_id = cursor.fetchone()
                     cursor.execute('INSERT INTO AddressNotification (userID,addressID) VALUES (%s,%s)', (user_id,address_id[0]))
                     connection.commit()

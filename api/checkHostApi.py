@@ -1,3 +1,4 @@
+import time
 from abc import ABC, abstractmethod
 import asyncio
 import aiohttp
@@ -121,10 +122,11 @@ class AbstractSubFactory(ABC):
         async with aiohttp.ClientSession() as session:
             make_requests = MakeRequests(session)
             result = await make_requests.get_request(endpoint, params={'host': _host, **kwargs})
+            # print(result)
             if kwargs.get('return_request_id'): return result
             # first_dict_value = next(iter(kwargs.values()))
             # sleep_secon = len(first_dict_value) if isinstance(first_dict_value, list) else first_dict_value
-            await asyncio.sleep(10)
+            await asyncio.sleep(15)
             create_task = asyncio.create_task(self.clean_data(result))
             return await create_task
 
@@ -156,16 +158,19 @@ async def client(check, **kwargs):
     return await ping_factory.check(**kwargs)
 
 if __name__ == "__main__":
-    a = asyncio.run(
-        client(
-            check=PingFactory,
-            _host='finland.ggkala.shop',
-            # node=[f'ir{3}.node.check-host.net'],
-            max_nodes=80,
-            # return_request_id = True
+    for b in range(100):
+        a = asyncio.run(
+            client(
+                check=PingFactory,
+                _host='finland.ggkala.shop',
+                # node=[f'ir{3}.node.check-host.net'],
+                max_nodes=80,
+                return_request_id = True
+            )
         )
-    )
-    print(a)
+        print(b, a)
+        time.sleep(27)
+
     # clean = CleanPingFactory()
     # print(asyncio.run(clean.clean_data(request_id='1aea8626k862')))
 

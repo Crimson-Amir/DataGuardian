@@ -10,6 +10,7 @@ default_language = 'en'
 posgres_manager = Client(**database_detail)
 status_emoji = {0: '❌', 1: '🔴', 2: '🟠', 3: '🟡', 4: '🟢'}
 status_range_emoji = {0: '❌', range(1, 50): '🔴', range(50, 70): '🟠', range(70, 85): '🟡', range(85, 100 + 1): '🟢'}
+get_boolean_emoji = {True: '🟢', False: '🔴'}
 
 def get_range_emoji(value):
     if value in status_range_emoji:
@@ -100,3 +101,11 @@ def handle_conversetion_error(func):
             return ConversationHandler.END
 
     return wrapper
+
+
+class Singleton(type):
+    _isinstance = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._isinstance:
+            cls._isinstance[cls] = super().__call__(*args, **kwargs)
+        return cls._isinstance[cls]

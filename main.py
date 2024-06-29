@@ -1,5 +1,6 @@
 from create_database import create; create()
 from utilities import FindText, handle_error, UserNotFound, posgres_manager
+from notification.check_addreses_ping import Check10
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler
@@ -8,6 +9,7 @@ from ipGuardian.ip_guardian import ip_guardian_menu, add_ip_conversation
 from userSetting import setting_menu, ip_guardian_setting_menu, address_setting, country_ping_notification
 from user.registerCore import RegisterUser
 from admin.adminTelegram import notify_admin
+
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -69,7 +71,7 @@ if __name__ == '__main__':
     application.add_handler(CallbackQueryHandler(address_setting, pattern='address_setting_(.*)'))
     application.add_handler(CallbackQueryHandler(country_ping_notification, pattern='country_ping_notification_(.*)'))
 
-    # application.job_queue.run_repeating(notification_job, interval=check_every_min * 60, first=0)
+    application.job_queue.run_repeating(Check10().execute, interval=10 * 1, first=0)
 
     application.run_polling()
 

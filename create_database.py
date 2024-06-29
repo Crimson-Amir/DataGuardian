@@ -48,11 +48,13 @@ list_of_commands = [
 
 {'query': """
     CREATE TABLE IF NOT EXISTS Address (
+    status BOOLEAN DEFAULT TRUE,
+    active BOOLEAN DEFAULT TRUE,
+    last_score_percent SMALLINT,
     addressID SERIAL PRIMARY KEY,
     userID BIGINT NOT NULL,
     address VARCHAR(100) NOT NULL,
     address_name VARCHAR(100),
-    score_percent SMALLINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user FOREIGN KEY (userID) REFERENCES UserDetail(userID) ON DELETE CASCADE,
     CONSTRAINT unique_user_address UNIQUE (userID, address)
@@ -62,6 +64,8 @@ list_of_commands = [
 
 {'query': """
     CREATE TABLE IF NOT EXISTS AddressNotification (
+    wait_for_check BOOLEAN DEFAULT TRUE,
+    period_check_in_min SMALLINT DEFAULT 10, 
     notifID SERIAL PRIMARY KEY,
     addressID INTEGER NOT NULL,
     userID BIGINT NOT NULL,
@@ -94,53 +98,38 @@ list_of_commands = [
 
 ]
 
-
 init_country = [
     {'query': """
-    INSERT INTO Country (country_name, country_short_name, city) VALUES
-    ('United Arab Emirates', 'AE', 'Dubai'),
-    ('Bulgaria', 'BG', 'Sofia'),
-    ('Brazil', 'BR', 'Sao Paulo'),
-    ('Switzerland', 'CH', 'Zurich'),
-    ('Czechia', 'CZ', 'C.Budejovice'),
-    ('Germany', 'DE', 'Nuremberg'),
-    ('Germany', 'DE', 'Frankfurt'),
-    ('Spain', 'ES', 'Barcelona'),
-    ('Finland', 'FI', 'Helsinki'),
-    ('France', 'FR', 'Paris'),
-    ('Hong Kong', 'HK', 'Hong Kong'),
-    ('Croatia', 'HR', 'Sisak'),
-    ('Israel', 'IL', 'Tel Aviv'),
-    ('Israel', 'IL', 'Netanya'),
-    ('India', 'IN', 'Mumbai'),
-    ('Iran', 'IR', 'Tehran'),
-    ('Iran', 'IR', 'Shiraz'),
-    ('Iran', 'IR', 'Esfahan'),
-    ('Iran', 'IR', 'Karaj'),
-    ('Italy', 'IT', 'Milan'),
-    ('Japan', 'JP', 'Tokyo'),
-    ('Kazakhstan', 'KZ', 'Karaganda'),
-    ('Lithuania', 'LT', 'Vilnius'),
-    ('Moldova', 'MD', 'Chisinau'),
-    ('Netherlands', 'NL', 'Amsterdam'),
-    ('Netherlands', 'NL', 'Meppel'),
-    ('Poland', 'PL', 'Poznan'),
-    ('Poland', 'PL', 'Warsaw'),
-    ('Portugal', 'PT', 'Viana'),
-    ('Serbia', 'RS', 'Belgrade'),
-    ('Russia', 'RU', 'Moscow'),
-    ('Russia', 'RU', 'Saint Petersburg'),
-    ('Russia', 'RU', 'Ekaterinburg'),
-    ('Sweden', 'SE', 'Tallberg'),
-    ('Turkey', 'TR', 'Istanbul'),
-    ('Turkey', 'TR', 'Gebze'),
-    ('Ukraine', 'UA', 'Khmelnytskyi'),
-    ('Ukraine', 'UA', 'Kyiv'),
-    ('Ukraine', 'UA', 'SpaceX Starlink'),
-    ('United Kingdom', 'GB', 'Coventry'),
-    ('United States', 'US', 'Chicago'),
-    ('United States', 'US', 'Dallas'),
-    ('United States', 'US', 'Atlanta');
+    INSERT INTO Country (country_name, country_short_name) VALUES
+    ('United Arab Emirates', 'AE'),
+    ('Bulgaria', 'BG'),
+    ('Brazil', 'BR'),
+    ('Switzerland', 'CH'),
+    ('Czechia', 'CZ'),
+    ('Germany', 'DE'),
+    ('Spain', 'ES'),
+    ('Finland', 'FI'),
+    ('France', 'FR'),
+    ('Hong Kong', 'HK'),
+    ('Croatia', 'HR'),
+    ('Israel', 'IL'),
+    ('India', 'IN'),
+    ('Iran', 'IR'),
+    ('Italy', 'IT'),
+    ('Japan', 'JP'),
+    ('Kazakhstan', 'KZ'),
+    ('Lithuania', 'LT'),
+    ('Moldova', 'MD'),
+    ('Netherlands', 'NL'),
+    ('Poland', 'PL'),
+    ('Portugal', 'PT'),
+    ('Serbia', 'RS'),
+    ('Russia', 'RU'),
+    ('Sweden', 'SE'),
+    ('Turkey', 'TR'),
+    ('Ukraine', 'UA'),
+    ('United Kingdom', 'GB'),
+    ('United States', 'US');
     """}
 ]
 
@@ -157,7 +146,7 @@ def create():
 
 def init():
     a.execute('transaction', init_country)
-    # a.execute('transaction', init_rank)
+    a.execute('transaction', init_rank)
 
 # init()
 # create()
