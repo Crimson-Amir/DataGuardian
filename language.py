@@ -75,6 +75,16 @@ text_transaction = {
         'en': 'You can not register more country!\nremove some country or Subscribe for more access',
         'fa': 'شما نمیتوانید کشور بیشتری اضافه کنید!\nکشورهای قبلی را حذف کنید یا اشتراک ویژه تهیه کنید'
     },
+    'ping_notification_text': {
+        'en': '🔔 Notification: IP Address Ping Status'
+              '\n\nWe have detected that your IP address {0} is experiencing connectivity issues in the following locations:',
+        'fa': '🔔 اعلان: وضعیت پینگ آدرس آیپی'
+              '\n\nمتوجه شدیم آدرس آیپی شما {0} در لوکیشن های زیر با مشکلاتی مواجه است:'
+    },
+    'some_id_deleted': {
+        'en': 'The following addresses are disabled due to lower than expected ping:',
+        'fa': 'آدرس های زیر به دلیل پینگ کمتر از انتظار غیرفعال میشوند:'
+    },
 }
 
 keyboard_transaction = {

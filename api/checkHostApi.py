@@ -52,8 +52,9 @@ class CleanData(ABC):
             except Exception as e:
                 clean_data_dict = {'error': e}
             final_result[f'{country_name}, {city}'] = clean_data_dict
-        final_result['general_score'] = general_score
+
         final_result['number_of_country'] = len(final_result)
+        final_result['general_score'] = general_score
         return final_result
 
 
@@ -164,12 +165,12 @@ if __name__ == "__main__":
                 check=PingFactory,
                 _host='finland.ggkala.shop',
                 # node=[f'ir{3}.node.check-host.net'],
-                max_nodes=80,
+                max_nodes=5,
                 return_request_id = True
             )
         )
         print(b, a)
-        time.sleep(27)
+        time.sleep(10)
 
     # clean = CleanPingFactory()
     # print(asyncio.run(clean.clean_data(request_id='1aea8626k862')))

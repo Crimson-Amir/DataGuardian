@@ -67,9 +67,10 @@ class RegisterIP(metaclass=Singleton):
         get_result = CleanPingFactory()
         result = await get_result.clean_data(result)
         earned_score = result.get("general_score")
+        print('result', result)
         general_scoer = result.get("number_of_country") * 4
         score_present = calcuate_percentage_formula(earned_score, general_scoer)
-        host_ip = await self.find_ip_host(result)
+        host_ip = await self.find_ip_host(result) if earned_score != 0 else 'no ip found'
         if host_ip == 'no hip found': raise ValueError
         final_text = (f'Host IP: {host_ip}\n'
                       f'Points Received: {earned_score}/{general_scoer} ({score_present}% {get_range_emoji(int(score_present))})\n\n')

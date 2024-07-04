@@ -71,7 +71,7 @@ if __name__ == '__main__':
     application.add_handler(CallbackQueryHandler(address_setting, pattern='address_setting_(.*)'))
     application.add_handler(CallbackQueryHandler(country_ping_notification, pattern='country_ping_notification_(.*)'))
 
-    application.job_queue.run_repeating(Check10().execute, interval=10 * 1, first=0)
+    application.job_queue.run_repeating(Check10().execute, interval=60 * 2, first=0)
 
     application.run_polling()
 

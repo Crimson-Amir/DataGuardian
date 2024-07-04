@@ -6,6 +6,7 @@ from language import text_transaction, keyboard_transaction
 from posgres_manager import Client
 from telegram.ext import ConversationHandler
 
+
 default_language = 'en'
 posgres_manager = Client(**database_detail)
 status_emoji = {0: '❌', 1: '🔴', 2: '🟠', 3: '🟡', 4: '🟢'}
@@ -26,10 +27,11 @@ class UserNotFound(Exception):
 
 
 class FindText:
-    def __init__(self, update, context, notify_user=True):
+    def __init__(self, update, context, user_id=None, notify_user=True):
         self._update = update
         self._context = context
         self._notify_user = notify_user
+        self._user_id = user_id
 
     @staticmethod
     async def language_transaction(text_key, language_code=default_language, section="text") -> str:

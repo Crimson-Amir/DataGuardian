@@ -70,6 +70,8 @@ list_of_commands = [
     addressID INTEGER NOT NULL,
     userID BIGINT NOT NULL,
     score_percent_notification SMALLINT DEFAULT 50,
+    expected_ping_number_for_notification SMALLINT DEFAULT 3,
+    run_after TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_address FOREIGN KEY (addressID) REFERENCES Address(addressID) ON DELETE CASCADE,
     CONSTRAINT fk_user FOREIGN KEY (userID) REFERENCES UserDetail(userID) ON DELETE CASCADE,
