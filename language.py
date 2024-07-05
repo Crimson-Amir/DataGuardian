@@ -75,16 +75,29 @@ text_transaction = {
         'en': 'You can not register more country!\nremove some country or Subscribe for more access',
         'fa': 'شما نمیتوانید کشور بیشتری اضافه کنید!\nکشورهای قبلی را حذف کنید یا اشتراک ویژه تهیه کنید'
     },
+    'access_denied_for_register_address': {
+        'en': 'You can not register more IP!\nremove some PI or Subscribe for more access',
+        'fa': 'شما نمیتوانید آدرس بیشتری اضافه کنید!\nآدرس های قبلی را حذف کنید یا اشتراک ویژه تهیه کنید'
+    },
     'ping_notification_text': {
         'en': '🔔 Notification: IP Address Ping Status'
-              '\n\nWe have detected that your IP address {0} is experiencing connectivity issues in the following locations:',
+              '\n\nWe have detected that your IP address {} is experiencing connectivity issues in the following locations:',
         'fa': '🔔 اعلان: وضعیت پینگ آدرس آیپی'
-              '\n\nمتوجه شدیم آدرس آیپی شما {0} در لوکیشن های زیر با مشکلاتی مواجه است:'
+              '\n\nمتوجه شدیم آدرس آیپی شما {} در لوکیشن های زیر با مشکلاتی مواجه است:'
     },
     'some_id_deleted': {
         'en': 'The following addresses are disabled due to lower than expected ping:',
         'fa': 'آدرس های زیر به دلیل پینگ کمتر از انتظار غیرفعال میشوند:'
     },
+    'address_detail': {
+        'en': 'You can change address config in this section.'
+              '\n\nIP Address: {0}'
+              '\nStatus: {1}',
+        'fa': 'از این قسمت میتوانید پیکربندی آدرس را تغییر دهید.'
+              '\n\nآدرس آیپی: 1'
+              '\nوضعیت: 2'
+    },
+
 }
 
 keyboard_transaction = {
@@ -123,6 +136,10 @@ keyboard_transaction = {
     'ip_guardian_setting': {
         'en': 'IpGuadian Settings',
         'fa': 'تنظیمات آیپی گاردین'
+    },
+    'country_config': {
+        'en': 'Countrys Notificaion Setting',
+        'fa': 'تنظیمات اعلان کشورها'
     }
 }
 

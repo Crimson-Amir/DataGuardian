@@ -44,7 +44,7 @@ class Notification:
 
         if some_ids_has_problem:
             text = await ft_instance.find_from_database(user_id, 'ping_notification_text')
-            text.format(domain)
+            text = text.format(domain)
             text += '\n\n' + final[1]
             if self.location_deleted:
                 text += '\n\n' + await ft_instance.find_from_database(user_id, 'some_id_deleted')
@@ -95,7 +95,6 @@ class CheckAbstract(ABC):
             posgres_manager.execute('transaction', [{
                 'query': 'UPDATE AddressNotification SET run_after = %s WHERE addressID = (SELECT addressID FROM Address WHERE address = %s)',
                 'params': (hours_later, domain)}])
-
 
 class Check10(CheckAbstract):
     async def execute(self, context):

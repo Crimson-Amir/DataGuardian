@@ -170,7 +170,7 @@ if __name__ == "__main__":
             )
         )
         print(b, a)
-        time.sleep(10)
+        time.sleep(27)
 
     # clean = CleanPingFactory()
     # print(asyncio.run(clean.clean_data(request_id='1aea8626k862')))

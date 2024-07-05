@@ -1,12 +1,13 @@
 from create_database import create; create()
-from utilities import FindText, handle_error, UserNotFound, posgres_manager
-from notification.check_addreses_ping import Check10
+from utilities import FindText, handle_error, UserNotFound
+from notification.check_addreses_ping import Check10, Check20, Check30
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler
 from private import telegram_bot_token
 from ipGuardian.ip_guardian import ip_guardian_menu, add_ip_conversation
-from userSetting import setting_menu, ip_guardian_setting_menu, address_setting, country_ping_notification
+from userSetting import setting_menu
+from ipGuardian.myIPs import ip_guardian_setting_menu, country_notification_config, country_ping_notification, address_setting
 from user.registerCore import RegisterUser
 from admin.adminTelegram import notify_admin
 
@@ -67,11 +68,14 @@ if __name__ == '__main__':
 
     # setting
     application.add_handler(CallbackQueryHandler(setting_menu, pattern='setting_menu'))
-    application.add_handler(CallbackQueryHandler(ip_guardian_setting_menu, pattern='ip_guardian_setting_menu'))
     application.add_handler(CallbackQueryHandler(address_setting, pattern='address_setting_(.*)'))
+    application.add_handler(CallbackQueryHandler(ip_guardian_setting_menu, pattern='ip_guardian_setting_menu'))
+    application.add_handler(CallbackQueryHandler(country_notification_config, pattern='country_notification_config_(.*)'))
     application.add_handler(CallbackQueryHandler(country_ping_notification, pattern='country_ping_notification_(.*)'))
 
-    application.job_queue.run_repeating(Check10().execute, interval=60 * 2, first=0)
+    application.job_queue.run_repeating(Check10().execute, interval=60 * 10, first=0)
+    application.job_queue.run_repeating(Check20().execute, interval=60 * 20, first=0)
+    application.job_queue.run_repeating(Check30().execute, interval=60 * 30, first=0)
 
     application.run_polling()
 

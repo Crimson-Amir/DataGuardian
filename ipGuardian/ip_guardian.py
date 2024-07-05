@@ -1,4 +1,4 @@
-from utilities import FindText, handle_error, handle_conversetion_error
+from utilities import FindText, handle_error, handle_conversetion_error, posgres_manager
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler, CallbackQueryHandler, filters, MessageHandler
 from api.checkHostApi import client, PingFactory
@@ -9,6 +9,7 @@ class FakeUpdate:
     callback_query = None
     class effective_chat: id = None
 
+
 @handle_error
 async def ip_guardian_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_detail = update.effective_chat
@@ -16,7 +17,7 @@ async def ip_guardian_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = await ft_instance.find_text('select_section')
     main_keyboard = [
         [InlineKeyboardButton(await ft_instance.find_keyboard('add_ip'), callback_data='add_ip')],
-        [InlineKeyboardButton(await ft_instance.find_keyboard('view_ips'), callback_data='view_ips'),
+        [InlineKeyboardButton(await ft_instance.find_keyboard('view_ips'), callback_data='ip_guardian_setting_menu'),
          InlineKeyboardButton(await ft_instance.find_keyboard('help_button'), callback_data='help_ip')],
         [InlineKeyboardButton(await ft_instance.find_keyboard('back_button'), callback_data='main_menu')],
     ]
@@ -26,21 +27,16 @@ async def ip_guardian_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=user_detail.id, text=text, reply_markup=InlineKeyboardMarkup(main_keyboard), parse_mode='html')
 
 
-@handle_error
-async def ip_guardian_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_detail = update.effective_chat
-    ft_instance = FindText(update, context)
-    text = await ft_instance.find_text('select_section')
-    main_keyboard = [
-        [InlineKeyboardButton(await ft_instance.find_keyboard('add_ip'), callback_data='add_ip')],
-        [InlineKeyboardButton(await ft_instance.find_keyboard('view_ips'), callback_data='view_ips'),
-         InlineKeyboardButton(await ft_instance.find_keyboard('help_button'), callback_data='help_ip')],
-        [InlineKeyboardButton(await ft_instance.find_keyboard('back_button'), callback_data='main_menu')],
-    ]
-    if update.callback_query:
-        await update.callback_query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(main_keyboard), parse_mode='html')
-        return
-    await context.bot.send_message(chat_id=user_detail.id, text=text, reply_markup=InlineKeyboardMarkup(main_keyboard), parse_mode='html')
+async def is_user_eligible_to_add_address(user_id):
+    fetch_from_db = posgres_manager.execute('query', {'query': """
+            SELECT COUNT(a.addressID), ur.max_allow_ip_register 
+            FROM UserRank ur 
+            JOIN Address a ON ur.userID = a.userID 
+            WHERE ur.userID = %s
+            GROUP BY ur.max_allow_ip_register""", 'params': (user_id,)})
+
+    if fetch_from_db[0][0] < fetch_from_db[0][1]: return True
+    return False
 
 
 @handle_error
@@ -57,6 +53,11 @@ async def cancel_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE
 async def add_ip(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     ft_instance = FindText(update, context)
+
+    if not await is_user_eligible_to_add_address(chat_id):
+        text = await ft_instance.find_text('access_denied_for_register_address')
+        return await update.callback_query.answer(text, show_alert=True)
+
     text = await ft_instance.find_text('add_address_conversation')
     await update.callback_query.answer(text)
     keyboard = [[InlineKeyboardButton(await ft_instance.find_keyboard('cancel_button'), callback_data='cancel_conversation')]]
