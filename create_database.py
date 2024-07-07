@@ -150,7 +150,7 @@ def init():
     a.execute('transaction', init_country)
     a.execute('transaction', init_rank)
 
-# init()
+init()
 # create()
 # print(a.execute('transaction', [{'query': 'drop table Country', 'params': None}]))
 #

@@ -32,8 +32,8 @@ text_transaction = {
         'fa': 'کانورسیشن بسته شد!'
     },
     'waiting_for_check_address': {
-        'en': 'Wait a few second ⏳\nChecking Address ...',
-        'fa': 'چندثانیه صبر کنید ⏳\nدرحال بررسی آدرس ...'
+        'en': 'Wait a few second ⏳\nChecking Address ...\nWaiting Time: {0} second',
+        'fa': 'چندثانیه صبر کنید ⏳\nدرحال بررسی آدرس ...\nزمان انتظار: {0} ثانیه'
     },
     'address_in_block_list': {
         'en': 'You can not add this address right now\nplease Try again later',
@@ -59,6 +59,10 @@ text_transaction = {
         'en': 'The operation successful✅',
         'fa': 'عملیات با موفقیت انجام شد✅'
     },
+    'operation_failed': {
+        'en': 'The operation failed❌',
+        'fa': 'عملیات شسکت خورد❌'
+    },
     'somthing_wrong_in_address': {
         'en': 'The operation not successful❌\nThere may have been a problem in address, re-register the address or contact support!',
         'fa': 'عملیات موفقیت آمیز نبود!❌\nاحتمالا مشکلی در آدرس وجود دارد، آدرس را دوباره ثبت کنید یا با پشتیبانی تماس بگیرید'
@@ -76,7 +80,7 @@ text_transaction = {
         'fa': 'شما نمیتوانید کشور بیشتری اضافه کنید!\nکشورهای قبلی را حذف کنید یا اشتراک ویژه تهیه کنید'
     },
     'access_denied_for_register_address': {
-        'en': 'You can not register more IP!\nremove some PI or Subscribe for more access',
+        'en': 'You can not register more IP!\nremove some IP or Subscribe for more access',
         'fa': 'شما نمیتوانید آدرس بیشتری اضافه کنید!\nآدرس های قبلی را حذف کنید یا اشتراک ویژه تهیه کنید'
     },
     'ping_notification_text': {
@@ -137,9 +141,17 @@ keyboard_transaction = {
         'en': 'IpGuadian Settings',
         'fa': 'تنظیمات آیپی گاردین'
     },
-    'country_config': {
+    'country_notification_config': {
         'en': 'Countrys Notificaion Setting',
         'fa': 'تنظیمات اعلان کشورها'
+    },
+    'disable_address': {
+        'en': 'Disable Address ⇣',
+        'fa': 'غیرفعال کردن آدرس ⇣'
+    },
+    'enable_address': {
+        'en': 'Enable Address ⇡',
+        'fa': 'فعال کردن آدرس ⇡'
     }
 }
 

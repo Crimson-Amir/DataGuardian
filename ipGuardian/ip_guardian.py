@@ -3,6 +3,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler, CallbackQueryHandler, filters, MessageHandler
 from api.checkHostApi import client, PingFactory
 from ipGuardian.ip_guardianCore import RegisterIP
+from notification.check_addreses_ping import CheckAbstract
 
 GET_IP = 0
 class FakeUpdate:
@@ -29,12 +30,13 @@ async def ip_guardian_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def is_user_eligible_to_add_address(user_id):
     fetch_from_db = posgres_manager.execute('query', {'query': """
-            SELECT COUNT(a.addressID), ur.max_allow_ip_register 
+            SELECT COALESCE(COUNT(a.addressID), 0), ur.max_allow_ip_register 
             FROM UserRank ur 
-            JOIN Address a ON ur.userID = a.userID 
+            LEFT JOIN Address a ON ur.userID = a.userID 
             WHERE ur.userID = %s
             GROUP BY ur.max_allow_ip_register""", 'params': (user_id,)})
 
+    print(fetch_from_db)
     if fetch_from_db[0][0] < fetch_from_db[0][1]: return True
     return False
 
@@ -70,20 +72,20 @@ async def get_ip(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_chat.id
     address = update.message.text
     ft_instance = FindText(update, context)
+
     register_ip_class = RegisterIP()
     if address in register_ip_class.ip_block_list:
         await context.bot.send_message(chat_id=user_id, text=await ft_instance.find_text('address_in_block_list'), parse_mode='html')
         return ConversationHandler.END
-    check_host_instance = await client(
-        check=PingFactory,
-        _host=address,
-        max_nodes=55,
-        return_request_id = True
-    )
-    context.job_queue.run_once(register_ip, when=15, name=f'{user_id}_&_{address}')
+
+    get_time = CheckAbstract.run_after
     text = await ft_instance.find_text('waiting_for_check_address')
+    text = text.format(get_time + 15)
     message_id = await context.bot.send_message(chat_id=user_id, text=text, parse_mode='html')
-    register_ip_class.message_for_update[str(user_id)] = [check_host_instance, message_id.message_id]
+
+    data = {'address': address, 'register_ip_class': register_ip_class, 'user_id': user_id, 'message_id': message_id}
+    context.job_queue.run_once(get_ip_request_id, when=get_time, data=data)
+
     return ConversationHandler.END
 
 
@@ -98,10 +100,27 @@ add_ip_conversation = ConversationHandler(
     conversation_timeout=1500,
 )
 
+
+async def get_ip_request_id(context):
+    address = context.job.data.get('address')
+    register_ip_class = context.job.data.get('register_ip_class')
+    user_id = context.job.data.get('user_id')
+    message_id = context.job.data.get('message_id')
+
+    check_host_instance = await client(
+        check=PingFactory,
+        _host=address,
+        max_nodes=55,
+        return_request_id = True)
+
+    context.job_queue.run_once(register_ip, when=15, data={'user_id': user_id, 'address': address})
+    register_ip_class.message_for_update[user_id] = [check_host_instance, message_id.message_id]
+
+
 async def register_ip(context):
-    job_name = context.job.name.split('_&_')
-    user_id = job_name[0]
-    address = job_name[1]
+    data = context.job.data
+    user_id = data.get('user_id')
+    address = data.get('address')
     update = FakeUpdate().effective_chat.id = user_id
     ft_instance = FindText(update, context)
 
@@ -112,9 +131,8 @@ async def register_ip(context):
 
     if register.get('status', 0):
         text = await ft_instance.find_from_database(user_id, register.get('msg', 'user_error_message'))
-        await context.bot.edit_message_text(
+        return await context.bot.edit_message_text(
             text=text + f'\n\n{address_detail_text}', chat_id=user_id, message_id=message_id)
-        return
 
     erro_msg = await ft_instance.find_from_database(user_id, register.get('error', ''))
     await context.bot.edit_message_text(text=erro_msg + f'\n\n{address_detail_text}', chat_id=user_id, message_id=message_id)

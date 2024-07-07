@@ -7,7 +7,7 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Callb
 from private import telegram_bot_token
 from ipGuardian.ip_guardian import ip_guardian_menu, add_ip_conversation
 from userSetting import setting_menu
-from ipGuardian.myIPs import ip_guardian_setting_menu, country_notification_config, country_ping_notification, address_setting
+from ipGuardian.myIPs import ip_guardian_setting_menu, ContryNotification, ChangeAddressStatus,address_setting
 from user.registerCore import RegisterUser
 from admin.adminTelegram import notify_admin
 
@@ -63,16 +63,21 @@ if __name__ == '__main__':
     application.add_handler(CallbackQueryHandler(start, pattern='main_menu'))
 
     # ip guardian
-    application.add_handler(CallbackQueryHandler(ip_guardian_menu, pattern='ip_guardian_menu'))
+    country_notification = ContryNotification()
+    change_country_status = ChangeAddressStatus()
     application.add_handler(add_ip_conversation)
+
+    application.add_handler(CallbackQueryHandler(ip_guardian_menu, pattern='ip_guardian_menu'))
+    application.add_handler(CallbackQueryHandler(ip_guardian_setting_menu, pattern='ip_guardian_setting_menu'))
+    application.add_handler(CallbackQueryHandler(country_notification.country_notification_config, pattern='country_notification_config_(.*)'))
+    application.add_handler(CallbackQueryHandler(country_notification.country_ping_notification, pattern='country_ping_notification_(.*)'))
+    application.add_handler(CallbackQueryHandler(change_country_status.change_status, pattern='change_address_satus_(.*)'))
 
     # setting
     application.add_handler(CallbackQueryHandler(setting_menu, pattern='setting_menu'))
     application.add_handler(CallbackQueryHandler(address_setting, pattern='address_setting_(.*)'))
-    application.add_handler(CallbackQueryHandler(ip_guardian_setting_menu, pattern='ip_guardian_setting_menu'))
-    application.add_handler(CallbackQueryHandler(country_notification_config, pattern='country_notification_config_(.*)'))
-    application.add_handler(CallbackQueryHandler(country_ping_notification, pattern='country_ping_notification_(.*)'))
 
+    # notification
     application.job_queue.run_repeating(Check10().execute, interval=60 * 10, first=0)
     application.job_queue.run_repeating(Check20().execute, interval=60 * 20, first=0)
     application.job_queue.run_repeating(Check30().execute, interval=60 * 30, first=0)

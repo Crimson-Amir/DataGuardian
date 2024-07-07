@@ -81,7 +81,7 @@ async def handle_error_message(update, context, message_text=None):
 
 def handle_error(func):
     @functools.wraps(func)
-    async def warpper(update, context, **kwargs):
+    async def wrapper(update, context, **kwargs):
         user_detail = update.effective_chat
         try:
             return await func(update, context, **kwargs)
@@ -90,18 +90,19 @@ def handle_error(func):
             err = f"🔴 An error occurred in {func.__name__}:\n{str(e)}\nerror type: {type(e)}\nuser chat id: {user_detail.id}"
             await report_problem_to_admin(err)
             await handle_error_message(update, context)
-    return warpper
+    return wrapper
 
 def handle_conversetion_error(func):
     @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
+    async def wrapper(update, context, **kwargs):
+        user_detail = update.effective_chat
         try:
-            return await func(*args, **kwargs)
+            return await func(update, context, **kwargs)
         except Exception as e:
-            await report_problem_to_admin(f'Errot in {func.__name__}\nError Type: {type(e)}\nError: {e}')
-            await handle_error_message(*args)
+            err = f"🔴 An error occurred in {func.__name__}:\n{str(e)}\nerror type: {type(e)}\nuser chat id: {user_detail.id}"
+            await report_problem_to_admin(err)
+            await handle_error_message(update, context)
             return ConversationHandler.END
-
     return wrapper
 
 
