@@ -1,6 +1,6 @@
 from api.checkHostApi import client, PingFactory
 from utilities import posgres_manager, Singleton
-from asyncio import run
+# from asyncio import run
 from ipGuardian.ip_guardianCore import RegisterIP
 
 class ProtoType(metaclass=Singleton):

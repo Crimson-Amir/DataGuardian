@@ -76,12 +76,12 @@ text_transaction = {
         'fa': 'برای دسترسی های بالاتر اشتراک تهیه کنید. /subscribe'
     },
     'access_denied_for_register_country': {
-        'en': 'You can not register more country!\nremove some country or Subscribe for more access',
-        'fa': 'شما نمیتوانید کشور بیشتری اضافه کنید!\nکشورهای قبلی را حذف کنید یا اشتراک ویژه تهیه کنید'
+        'en': 'You can not register more country!\nremove some country or /subscribe for more access',
+        'fa': 'شما نمیتوانید کشور بیشتری اضافه کنید!\nکشورهای قبلی را حذف کنید یا اشتراک تهیه کنید'
     },
     'access_denied_for_register_address': {
-        'en': 'You can not register more IP!\nremove some IP or Subscribe for more access',
-        'fa': 'شما نمیتوانید آدرس بیشتری اضافه کنید!\nآدرس های قبلی را حذف کنید یا اشتراک ویژه تهیه کنید'
+        'en': 'You can not register more IP!\nremove some IP or /subscribe for more access',
+        'fa': 'شما نمیتوانید آدرس بیشتری اضافه کنید!\nآدرس های قبلی را حذف کنید یا اشتراک تهیه کنید'
     },
     'ping_notification_text': {
         'en': '🔔 Notification: IP Address Ping Status'
@@ -100,6 +100,12 @@ text_transaction = {
         'fa': 'از این قسمت میتوانید پیکربندی آدرس را تغییر دهید.'
               '\n\nآدرس آیپی: 1'
               '\nوضعیت: 2'
+    },
+    'fullcheck_is_limited': {
+        'en': 'Sorry, you already Fullcheck this address {} time today!'
+              '\nCheck Back after {} or /subscribe',
+        'fa': 'ببخشید شما امروز 3 بار این آدرس را بررسی کردید!'
+              '\nبعد از {} دوباره بررسی کنید یا مشترک شوید. /subscribe'
     },
 
 }
@@ -152,7 +158,11 @@ keyboard_transaction = {
     'enable_address': {
         'en': 'Enable Address ⇡',
         'fa': 'فعال کردن آدرس ⇡'
-    }
+    },
+    'check_ip_my_ip': {
+        'en': 'Check IP ↻',
+        'fa': 'بررسی آیپی ↺'
+    },
 }
 
 countries_and_flags = {

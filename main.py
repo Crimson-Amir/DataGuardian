@@ -25,7 +25,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = await ft_instance.find_text('start_menu')
         main_keyboard = [
             [InlineKeyboardButton(await ft_instance.find_keyboard('main_menu_ip_guardian'), callback_data='ip_guardian_menu'),
-             InlineKeyboardButton(await ft_instance.find_keyboard('main_menu_virtualizor'), callback_data='virtualizor')],
+             InlineKeyboardButton(await ft_instance.find_keyboard('main_menu_virtualizor'), callback_data='not_ready_yet')],
             [InlineKeyboardButton(await ft_instance.find_keyboard('setting'), callback_data='setting_menu')],
         ]
         if update.callback_query:

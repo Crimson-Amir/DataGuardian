@@ -25,6 +25,7 @@ list_of_commands = [
     referral_link VARCHAR(50),
     membership_status VARCHAR(50),
     discount_code VARCHAR(50),
+    rankID SMALLINT REFERENCES Rank(rankID) DEFAULT 0,
     CONSTRAINT fk_referral FOREIGN KEY (entered_with_referral_link) REFERENCES UserDetail(userID) ON DELETE CASCADE
 );
 """},
@@ -34,17 +35,12 @@ list_of_commands = [
     rankID SERIAL PRIMARY KEY,
     rank_name VARCHAR(50) NOT NULL,
     rank_score INT NOT NULL,
+    max_allow_ip_register SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
+    max_country_per_address SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
+    max_ip_fullcheck_per_day SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );"""},
 
-{'query': """
-    CREATE TABLE IF NOT EXISTS UserRank (
-    userID BIGINT PRIMARY KEY REFERENCES UserDetail(userID) ON DELETE CASCADE,
-    rankID SMALLINT REFERENCES Rank(rankID) ON DELETE CASCADE,
-    max_allow_ip_register SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
-    max_country_per_address SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);"""},
 
 {'query': """
     CREATE TABLE IF NOT EXISTS Address (
@@ -55,6 +51,8 @@ list_of_commands = [
     userID BIGINT NOT NULL,
     address VARCHAR(100) NOT NULL,
     address_name VARCHAR(100),
+    fullcheck_count SMALLINT,
+    last_fullcheck_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user FOREIGN KEY (userID) REFERENCES UserDetail(userID) ON DELETE CASCADE,
     CONSTRAINT unique_user_address UNIQUE (userID, address)
@@ -138,7 +136,7 @@ init_country = [
 init_rank = [
     {'query': """
     INSERT INTO Rank (rank_name,rank_score) VALUES 
-    ('ROOKIE', 10)
+    ('ROOKIE', 10),
     """}
 ]
 
@@ -150,7 +148,8 @@ def init():
     a.execute('transaction', init_country)
     a.execute('transaction', init_rank)
 
-init()
+
+# init()
 # create()
 # print(a.execute('transaction', [{'query': 'drop table Country', 'params': None}]))
 #

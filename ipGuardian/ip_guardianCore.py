@@ -77,7 +77,7 @@ class RegisterIP(metaclass=Singleton):
         for key, value in result.items():
             if not isinstance(value, dict): continue
             final_text += (
-                f'{countries_and_flags.get(key.split(', ')[0], "")} {key}: {value.get("ok_request_count")}/{len(value.get("status_list"))}'
+                f'{countries_and_flags.get(key.split(", ")[0], "")} {key}: {value.get("ok_request_count")}/{len(value.get("status_list"))}'
                 f' | {round(value.get("min_time"), 2)} - {round(value.get("avg_time"), 2)} - {round(value.get("max_time"), 2)} '
                 f'{status_emoji.get(value.get("ok_request_count"), 0)}\n')
         return result, final_text, score_present, host_ip

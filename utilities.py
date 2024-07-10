@@ -22,8 +22,7 @@ def get_range_emoji(value):
     return None
 
 class UserNotFound(Exception):
-    def __init__(self):
-        super().__init__("user was't register in bot!")
+    def __init__(self): super().__init__("user was't register in bot!")
 
 
 class FindText:
@@ -50,7 +49,7 @@ class FindText:
             get_user_language_from_db = await self.get_language_from_database(user_id)
             if not get_user_language_from_db:
                 if self._notify_user:
-                    await handle_error_message(self._update, self._context, message_text="Your info was't found, please register with /start command!")
+                    await HandleErrors().handle_error_message(self._update, self._context, message_text="Your info was't found, please register with /start command!")
                 raise UserNotFound()
             user_language = get_user_language_from_db[0][0]
             self._context.user_data['user_language'] = user_language
@@ -66,44 +65,69 @@ class FindText:
         return await self.language_transaction(text_key, user_language, section=section)
 
 
-async def report_problem_to_admin(msg):
-    requests.post(url=telegram_bot_url, json={'chat_id': admin_chat_ids[0], 'text': msg})
+class HandleErrors:
+    err_msg = "🔴 An error occurred in {}:\n{}\nerror type: {}\nuser chat id: {}"
+    def handle_functions_error(self, func):
+        @functools.wraps(func)
+        async def wrapper(update, context, **kwargs):
+            user_detail = update.effective_chat
+            try:
+                return await func(update, context, **kwargs)
+            except Exception as e:
+                if 'Message is not modified' in str(e): return await update.callback_query.answer()
+                err = self.err_msg.format(func.__name__, str(e), type(e), user_detail.id)
+                await self.report_problem_to_admin(err)
+                await self.handle_error_message(update, context)
+        return wrapper
 
-async def handle_error_message(update, context, message_text=None):
-    user_id = update.effective_chat.id
-    ft_instance = FindText(update, context)
-    message_text = message_text if message_text else await ft_instance.find_text('user_error_message')
-    if update.callback_query:
-        await update.callback_query.answer(message_text)
-        return
-    await context.bot.send_message(text=message_text, chat_id=user_id)
+    def handle_classes_error(self, func):
+        @functools.wraps(func)
+        async def wrapper(self_probably, update, context, **kwargs):
+            user_detail = update.effective_chat
+            try:
+                return await func(self_probably, update, context, **kwargs)
+            except Exception as e:
+                if 'Message is not modified' in str(e): return await update.callback_query.answer()
+                err = self.err_msg.format(func.__name__, str(e), type(e), user_detail.id)
+                await self.report_problem_to_admin(err)
+                await self.handle_error_message(update, context)
+        return wrapper
 
+    def handle_queue_error(self, func):
+        @functools.wraps(func)
+        async def wrapper(context, **kwargs):
+            try: return await func(context, **kwargs)
+            except Exception as e:
+                err = self.err_msg.format(func.__name__, str(e), type(e), None)
+                await self.report_problem_to_admin(err)
+        return wrapper
 
-def handle_error(func):
-    @functools.wraps(func)
-    async def wrapper(update, context, **kwargs):
-        user_detail = update.effective_chat
-        try:
-            return await func(update, context, **kwargs)
-        except Exception as e:
-            if 'Message is not modified' in str(e): return await update.callback_query.answer()
-            err = f"🔴 An error occurred in {func.__name__}:\n{str(e)}\nerror type: {type(e)}\nuser chat id: {user_detail.id}"
-            await report_problem_to_admin(err)
-            await handle_error_message(update, context)
-    return wrapper
+    def handle_conversetion_error(self, func):
+        @functools.wraps(func)
+        async def wrapper(update, context, **kwargs):
+            user_detail = update.effective_chat
+            try:
+                return await func(update, context, **kwargs)
+            except Exception as e:
+                err = f"🔴 An error occurred in {func.__name__}:\n{str(e)}\nerror type: {type(e)}\nuser chat id: {user_detail.id}"
+                await self.report_problem_to_admin(err)
+                await self.handle_error_message(update, context)
+                return ConversationHandler.END
+        return wrapper
 
-def handle_conversetion_error(func):
-    @functools.wraps(func)
-    async def wrapper(update, context, **kwargs):
-        user_detail = update.effective_chat
-        try:
-            return await func(update, context, **kwargs)
-        except Exception as e:
-            err = f"🔴 An error occurred in {func.__name__}:\n{str(e)}\nerror type: {type(e)}\nuser chat id: {user_detail.id}"
-            await report_problem_to_admin(err)
-            await handle_error_message(update, context)
-            return ConversationHandler.END
-    return wrapper
+    @staticmethod
+    async def report_problem_to_admin(msg):
+        requests.post(url=telegram_bot_url, json={'chat_id': admin_chat_ids[0], 'text': msg})
+
+    @staticmethod
+    async def handle_error_message(update, context, message_text=None):
+        user_id = update.effective_chat.id
+        ft_instance = FindText(update, context)
+        message_text = message_text if message_text else await ft_instance.find_text('user_error_message')
+        if update.callback_query:
+            await update.callback_query.answer(message_text)
+            return
+        await context.bot.send_message(text=message_text, chat_id=user_id)
 
 
 class Singleton(type):

@@ -3,9 +3,11 @@ from notification.check_address_pingsCore import PingNotification
 from queue import PriorityQueue
 from abc import ABC, abstractmethod
 from ipGuardian.ip_guardianCore import RegisterIP
-from utilities import posgres_manager, FindText
+from utilities import posgres_manager, FindText, HandleErrors
 from datetime import datetime, timedelta
 
+handle_errors = HandleErrors()
+handle_conversetion_error, handle_queue_error = handle_errors.handle_conversetion_error, handle_errors.handle_queue_error
 
 class Notification:
     country_block_count = []
@@ -23,6 +25,8 @@ class Notification:
         PingNotification.force_refresh = True
         self.location_deleted.append(country_name)
 
+
+    @handle_queue_error
     async def handle_notification(self, context):
         data = context.job.data
         result = data.get('get_result')
@@ -62,6 +66,7 @@ class CheckAbstract(ABC):
     @abstractmethod
     async def execute(self, context): pass
 
+    @handle_queue_error
     async def run_queue(self, context):
         while not self.queue_instance.empty():
             queue_fetch = self.queue_instance.get()
@@ -72,6 +77,7 @@ class CheckAbstract(ABC):
 
         CheckAbstract.is_queue_running = False
 
+    @handle_queue_error
     async def get_request_id(self, context):
         main_data = context.job.data
         data = copy.deepcopy(main_data)
@@ -97,6 +103,7 @@ class CheckAbstract(ABC):
                 'params': (hours_later, domain)}])
 
 class Check10(CheckAbstract):
+    @handle_queue_error
     async def execute(self, context):
         fetch = await self.core_instance.get_eligible_notification(10)
 
@@ -106,6 +113,7 @@ class Check10(CheckAbstract):
             await self.run_queue(context)
 
 class Check20(CheckAbstract):
+    @handle_queue_error
     async def execute(self, context):
         fetch = await self.core_instance.get_eligible_notification(20)
         self.queue_instance.put((20, fetch))
@@ -114,6 +122,7 @@ class Check20(CheckAbstract):
             await self.run_queue(context)
 
 class Check30(CheckAbstract):
+    @handle_queue_error
     async def execute(self, context):
         fetch = await self.core_instance.get_eligible_notification(30)
         self.queue_instance.put((30, fetch))

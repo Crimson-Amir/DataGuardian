@@ -1,4 +1,4 @@
-from utilities import FindText, handle_error, handle_conversetion_error, posgres_manager
+from utilities import FindText, HandleErrors, posgres_manager
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler, CallbackQueryHandler, filters, MessageHandler
 from api.checkHostApi import client, PingFactory
@@ -6,12 +6,16 @@ from ipGuardian.ip_guardianCore import RegisterIP
 from notification.check_addreses_ping import CheckAbstract
 
 GET_IP = 0
+handle_errors = HandleErrors()
+handle_function_errors, handle_classes_errors = handle_errors.handle_classes_error, handle_errors.handle_classes_error
+handle_conversetion_error, handle_queue_error = handle_errors.handle_conversetion_error, handle_errors.handle_queue_error
+
 class FakeUpdate:
     callback_query = None
     class effective_chat: id = None
 
 
-@handle_error
+@handle_function_errors
 async def ip_guardian_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_detail = update.effective_chat
     ft_instance = FindText(update, context)
@@ -30,10 +34,10 @@ async def ip_guardian_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def is_user_eligible_to_add_address(user_id):
     fetch_from_db = posgres_manager.execute('query', {'query': """
-            SELECT COALESCE(COUNT(a.addressID), 0), ur.max_allow_ip_register 
-            FROM UserRank ur 
-            LEFT JOIN Address a ON ur.userID = a.userID 
-            WHERE ur.userID = %s
+            SELECT COALESCE(COUNT(a.addressID), 0), ra.max_allow_ip_register 
+            FROM Rank ra JOIN UserDetail ud ON ud.rankID = ra.rankID 
+            LEFT JOIN Address a ON ud.userID = a.userID 
+            WHERE ud.userID = %s
             GROUP BY ur.max_allow_ip_register""", 'params': (user_id,)})
 
     print(fetch_from_db)
@@ -41,7 +45,7 @@ async def is_user_eligible_to_add_address(user_id):
     return False
 
 
-@handle_error
+@handle_function_errors
 async def cancel_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     ft_instance = FindText(update, context)
@@ -101,6 +105,7 @@ add_ip_conversation = ConversationHandler(
 )
 
 
+@handle_queue_error
 async def get_ip_request_id(context):
     address = context.job.data.get('address')
     register_ip_class = context.job.data.get('register_ip_class')
@@ -117,6 +122,7 @@ async def get_ip_request_id(context):
     register_ip_class.message_for_update[user_id] = [check_host_instance, message_id.message_id]
 
 
+@handle_queue_error
 async def register_ip(context):
     data = context.job.data
     user_id = data.get('user_id')
