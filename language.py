@@ -107,6 +107,10 @@ text_transaction = {
         'fa': 'ببخشید شما امروز 3 بار این آدرس را بررسی کردید!'
               '\nبعد از {} دوباره بررسی کنید یا مشترک شوید. /subscribe'
     },
+    'waitin_for_check_host': {
+        'en': 'Fettched successfully! waiting for checkhost ...',
+        'fa': 'با موفقیت واکشی شد! انتظار برای چک هاست ...'
+    },
 
 }
 

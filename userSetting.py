@@ -1,8 +1,8 @@
-from utilities import FindText, handle_error
+from utilities import FindText, handle_functions_error
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-@handle_error
+@handle_functions_error
 async def setting_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_detail = update.effective_chat
     ft_instance = FindText(update, context)

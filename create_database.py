@@ -8,6 +8,17 @@ a = Client(**database_detail)
 list_of_commands = [
 
 {'query': """
+    CREATE TABLE IF NOT EXISTS Rank (
+    rankID SERIAL PRIMARY KEY,
+    rank_name VARCHAR(50) NOT NULL,
+    rank_score INT NOT NULL,
+    max_allow_ip_register SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
+    max_country_per_address SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
+    max_ip_fullcheck_per_day SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);"""},
+
+{'query': """
     CREATE TABLE IF NOT EXISTS UserDetail (
     id SERIAL PRIMARY KEY,
     userID BIGINT NOT NULL UNIQUE,
@@ -29,17 +40,6 @@ list_of_commands = [
     CONSTRAINT fk_referral FOREIGN KEY (entered_with_referral_link) REFERENCES UserDetail(userID) ON DELETE CASCADE
 );
 """},
-
-{'query': """
-    CREATE TABLE IF NOT EXISTS Rank (
-    rankID SERIAL PRIMARY KEY,
-    rank_name VARCHAR(50) NOT NULL,
-    rank_score INT NOT NULL,
-    max_allow_ip_register SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
-    max_country_per_address SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
-    max_ip_fullcheck_per_day SMALLINT NOT NULL CHECK (max_allow_ip_register >= 0),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);"""},
 
 
 {'query': """
@@ -135,8 +135,8 @@ init_country = [
 
 init_rank = [
     {'query': """
-    INSERT INTO Rank (rank_name,rank_score) VALUES 
-    ('ROOKIE', 10),
+    INSERT INTO Rank (rank_name,rank_score,max_allow_ip_register,max_country_per_address,max_ip_fullcheck_per_day) VALUES 
+    ('ROOKIE', 10, 2, 3, 3)
     """}
 ]
 

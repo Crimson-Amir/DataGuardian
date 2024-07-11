@@ -136,3 +136,8 @@ class Singleton(type):
         if cls not in cls._isinstance:
             cls._isinstance[cls] = super().__call__(*args, **kwargs)
         return cls._isinstance[cls]
+
+handle_errors = HandleErrors()
+handle_functions_error = handle_errors.handle_functions_error
+handle_conversetion_error, handle_queue_error = handle_errors.handle_conversetion_error, handle_errors.handle_queue_error
+handle_classes_errors = handle_errors.handle_classes_error

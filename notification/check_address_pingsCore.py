@@ -51,6 +51,7 @@ class PingNotification:
             # max_nodes=55,
             node=prepare_nodes,
             return_request_id = True)
+        print(result)
         return result
 
     @staticmethod
@@ -59,4 +60,4 @@ class PingNotification:
         get_address_detail = await register_id.format_ping_checker_text(result)
         return get_address_detail
 
-# a = run(PingNotification().get_eligible_notification(10))
+# a = run(PingNotification().get_check_request_id('human.ggkala.shop', []))

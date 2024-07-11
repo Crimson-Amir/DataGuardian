@@ -1,5 +1,5 @@
 from create_database import create; create()
-from utilities import FindText, handle_error, UserNotFound
+from utilities import FindText, handle_functions_error, UserNotFound
 from notification.check_addreses_ping import Check10, Check20, Check30
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -17,7 +17,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-@handle_error
+@handle_functions_error
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_detail = update.effective_chat
     try:
@@ -43,7 +43,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         raise e
 
-@handle_error
+@handle_functions_error
 async def register_user(update, context):
     user_detail = update.effective_chat
     query = update.callback_query

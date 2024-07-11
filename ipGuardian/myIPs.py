@@ -1,15 +1,15 @@
 from psycopg2 import errorcodes, errors
-from utilities import FindText, HandleErrors, posgres_manager, get_boolean_emoji
+from utilities import FindText, handle_functions_error, handle_classes_errors, posgres_manager, get_boolean_emoji
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from language import countries_and_flags
-from notification.check_address_pingsCore import PingNotification
+from ipGuardian.ip_guardianCore import RegisterIP
 from notification.check_addreses_ping import CheckAbstract
+from notification.check_address_pingsCore import PingNotification
+import copy
 
-handle_errors = HandleErrors()
-handle_function_errors, handle_classes_errors = handle_errors.handle_classes_error, handle_errors.handle_classes_error
 
-@handle_function_errors
+@handle_functions_error
 async def ip_guardian_setting_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ft_instance = FindText(update, context)
     text = await ft_instance.find_text('select_address')
@@ -24,7 +24,7 @@ async def ip_guardian_setting_menu(update: Update, context: ContextTypes.DEFAULT
     await update.callback_query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='html')
 
 
-@handle_function_errors
+@handle_functions_error
 async def address_setting(update, context, address_id=None):
     query = update.callback_query
     address_id = int(query.data.replace('address_setting_', '')) if not address_id else address_id
@@ -139,12 +139,16 @@ class ChangeAddressStatus:
 
 
 class CheckIP:
+    core_instance = PingNotification()
+
     @handle_classes_errors
     async def fullcheck_ip(self, update, context):
         address_id = int(update.callback_query.data.replace('fullcheck_ip_', ''))
         user_id = update.effective_chat.id
         query = update.callback_query
         ft_instance = FindText(update, context)
+        message_id = query.message.id
+        previous_text = query.message.text
 
         get_details = posgres_manager.execute('query', {'query': """
         SELECT ad.address,ra.max_ip_fullcheck_per_day,ad.last_fullcheck_at,ad.fullcheck_count 
@@ -164,8 +168,35 @@ class CheckIP:
         if not is_address_quilified:
             return await query.answer((await ft_instance.find_text('fullcheck_is_limited')).format(check_count, last_check_time))
 
-        previous_text = query.message.text
-        new_text = (await ft_instance.find_text('waiting_for_check_address')).format(CheckAbstract.run_after)
-        await query.edit_message_text(previous_text + '\n\n' + new_text)
+        get_run_after_time = await CheckAbstract().use_runafter_time()
+        await query.answer((await ft_instance.find_text('waiting_for_check_address')).format(get_run_after_time + 15))
+        data = {'user_id': user_id, 'address': address, 'query': query, 'message_id': message_id, 'previous_text': previous_text}
+        context.job_queue.run_once(self.handle_request, when=get_run_after_time, data=data)
 
-        context.job_queue.run_once(None, when=CheckAbstract.run_after, data=None)
+    async def handle_request(self, context):
+        main_data = context.job.data
+        data = copy.deepcopy(main_data)
+        user_id = data.get('user_id')
+        address = data.get('address')
+        message_id = data.get('message_id')
+        query = data.get('query')
+        await query.answer(await FindText(1, context).find_from_database(user_id, 'waitin_for_check_host'))
+        get_result = await self.core_instance.get_check_request_id(address, [])
+        context.job_queue.run_once(self.handle_result, when=15, data={
+            'get_result': get_result, 'user_id': user_id, 'message_id': message_id,
+            'previous_text': data.get('previous_text'), 'query': query})
+
+    @staticmethod
+    async def handle_result(context):
+        data = context.job.data
+        result = data.get('get_result')
+        user_id = data.get('user_id')
+        message_id = data.get('message_id')
+        previous_text = data.get('previous_text')
+        query = data.get('query')
+        ft_instance = FindText(1, context)
+        get_result = RegisterIP()
+        final = await get_result.format_ping_checker_text(result)
+        text = previous_text + '\n\n' + final
+        await query.answer(ft_instance.find_from_database(user_id, 'operation_successfull'))
+        await context.bot.edit_message_text(chat_id=user_id, message_id=message_id, text=text)

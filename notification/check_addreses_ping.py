@@ -3,11 +3,8 @@ from notification.check_address_pingsCore import PingNotification
 from queue import PriorityQueue
 from abc import ABC, abstractmethod
 from ipGuardian.ip_guardianCore import RegisterIP
-from utilities import posgres_manager, FindText, HandleErrors
+from utilities import posgres_manager, FindText, handle_queue_error
 from datetime import datetime, timedelta
-
-handle_errors = HandleErrors()
-handle_conversetion_error, handle_queue_error = handle_errors.handle_conversetion_error, handle_errors.handle_queue_error
 
 class Notification:
     country_block_count = []
@@ -62,6 +59,11 @@ class CheckAbstract(ABC):
     count_of_check_address_in_last_24_hourse = []
     is_queue_running = False
     run_after = 30
+
+    @classmethod
+    async def use_runafter_time(cls):
+        cls.run_after += 30
+        return cls.run_after
 
     @abstractmethod
     async def execute(self, context): pass
