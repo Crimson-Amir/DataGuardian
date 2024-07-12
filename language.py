@@ -156,12 +156,12 @@ keyboard_transaction = {
         'fa': 'تنظیمات اعلان کشورها'
     },
     'disable_address': {
-        'en': 'Disable Address ⇣',
-        'fa': 'غیرفعال کردن آدرس ⇣'
+        'en': 'Disable ⇣',
+        'fa': 'غیرفعال کردن ⇣'
     },
     'enable_address': {
-        'en': 'Enable Address ⇡',
-        'fa': 'فعال کردن آدرس ⇡'
+        'en': 'Enable ⇡',
+        'fa': 'فعال کردن ⇡'
     },
     'check_ip_my_ip': {
         'en': 'Check IP ↻',

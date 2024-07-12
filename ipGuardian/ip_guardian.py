@@ -1,4 +1,4 @@
-from utilities import FindText, HandleErrors, posgres_manager
+from utilities import FindText, handle_functions_error,  handle_conversetion_error, handle_queue_error, posgres_manager
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler, CallbackQueryHandler, filters, MessageHandler
 from api.checkHostApi import client, PingFactory
@@ -6,16 +6,13 @@ from ipGuardian.ip_guardianCore import RegisterIP
 from notification.check_addreses_ping import CheckAbstract
 
 GET_IP = 0
-handle_errors = HandleErrors()
-handle_function_errors, handle_classes_errors = handle_errors.handle_classes_error, handle_errors.handle_classes_error
-handle_conversetion_error, handle_queue_error = handle_errors.handle_conversetion_error, handle_errors.handle_queue_error
 
 class FakeUpdate:
     callback_query = None
     class effective_chat: id = None
 
 
-@handle_function_errors
+@handle_functions_error
 async def ip_guardian_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_detail = update.effective_chat
     ft_instance = FindText(update, context)
@@ -37,15 +34,15 @@ async def is_user_eligible_to_add_address(user_id):
             SELECT COALESCE(COUNT(a.addressID), 0), ra.max_allow_ip_register 
             FROM Rank ra JOIN UserDetail ud ON ud.rankID = ra.rankID 
             LEFT JOIN Address a ON ud.userID = a.userID 
-            WHERE ud.userID = %s
-            GROUP BY ur.max_allow_ip_register""", 'params': (user_id,)})
+            WHERE ud.userID = %s 
+            GROUP BY ra.max_allow_ip_register""", 'params': (user_id,)})
 
     print(fetch_from_db)
     if fetch_from_db[0][0] < fetch_from_db[0][1]: return True
     return False
 
 
-@handle_function_errors
+@handle_functions_error
 async def cancel_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     ft_instance = FindText(update, context)

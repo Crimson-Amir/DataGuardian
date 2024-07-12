@@ -1,16 +1,15 @@
 from create_database import create; create()
 from utilities import FindText, handle_functions_error, UserNotFound
 from notification.check_addreses_ping import Check10, Check20, Check30
-import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler
 from private import telegram_bot_token
 from ipGuardian.ip_guardian import ip_guardian_menu, add_ip_conversation
 from userSetting import setting_menu
-from ipGuardian.myIPs import ip_guardian_setting_menu, ContryNotification, ChangeAddressStatus,address_setting
+from ipGuardian.myIPs import ip_guardian_setting_menu, ContryNotification, ChangeAddressStatus,address_setting, CheckIP
 from user.registerCore import RegisterUser
 from admin.adminTelegram import notify_admin
-
+import logging
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -72,6 +71,7 @@ if __name__ == '__main__':
     application.add_handler(CallbackQueryHandler(country_notification.country_notification_config, pattern='country_notification_config_(.*)'))
     application.add_handler(CallbackQueryHandler(country_notification.country_ping_notification, pattern='country_ping_notification_(.*)'))
     application.add_handler(CallbackQueryHandler(change_country_status.change_status, pattern='change_address_satus_(.*)'))
+    application.add_handler(CallbackQueryHandler(CheckIP().fullcheck_ip, pattern='fullcheck_ip_(.*)'))
 
     # setting
     application.add_handler(CallbackQueryHandler(setting_menu, pattern='setting_menu'))

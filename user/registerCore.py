@@ -4,7 +4,7 @@ from utilities import posgres_manager
 
 
 class RegisterUser:
-    default_rank_id = 0
+    default_rank_id = 1
 
     async def register(self, user_detail, user_referral_code, selected_language):
         connect, backtopool, connection_pool = posgres_manager.execute('custom', None)

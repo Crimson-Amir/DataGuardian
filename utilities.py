@@ -71,8 +71,7 @@ class HandleErrors:
         @functools.wraps(func)
         async def wrapper(update, context, **kwargs):
             user_detail = update.effective_chat
-            try:
-                return await func(update, context, **kwargs)
+            try: return await func(update, context, **kwargs)
             except Exception as e:
                 if 'Message is not modified' in str(e): return await update.callback_query.answer()
                 err = self.err_msg.format(func.__name__, str(e), type(e), user_detail.id)
@@ -97,6 +96,15 @@ class HandleErrors:
         @functools.wraps(func)
         async def wrapper(context, **kwargs):
             try: return await func(context, **kwargs)
+            except Exception as e:
+                err = self.err_msg.format(func.__name__, str(e), type(e), None)
+                await self.report_problem_to_admin(err)
+        return wrapper
+
+    def handle_queue_class_error(self, func):
+        @functools.wraps(func)
+        async def wrapper(self_pobably, context, **kwargs):
+            try: return await func(self_pobably, context, **kwargs)
             except Exception as e:
                 err = self.err_msg.format(func.__name__, str(e), type(e), None)
                 await self.report_problem_to_admin(err)
@@ -140,4 +148,4 @@ class Singleton(type):
 handle_errors = HandleErrors()
 handle_functions_error = handle_errors.handle_functions_error
 handle_conversetion_error, handle_queue_error = handle_errors.handle_conversetion_error, handle_errors.handle_queue_error
-handle_classes_errors = handle_errors.handle_classes_error
+handle_classes_errors, handle_queue_class_error = handle_errors.handle_classes_error, handle_errors.handle_queue_class_error

@@ -3,7 +3,7 @@ from notification.check_address_pingsCore import PingNotification
 from queue import PriorityQueue
 from abc import ABC, abstractmethod
 from ipGuardian.ip_guardianCore import RegisterIP
-from utilities import posgres_manager, FindText, handle_queue_error
+from utilities import posgres_manager, FindText, handle_queue_error, handle_queue_class_error
 from datetime import datetime, timedelta
 
 class Notification:
@@ -23,7 +23,7 @@ class Notification:
         self.location_deleted.append(country_name)
 
 
-    @handle_queue_error
+    @handle_queue_class_error
     async def handle_notification(self, context):
         data = context.job.data
         result = data.get('get_result')
@@ -60,15 +60,16 @@ class CheckAbstract(ABC):
     is_queue_running = False
     run_after = 30
 
-    @classmethod
-    async def use_runafter_time(cls):
-        cls.run_after += 30
-        return cls.run_after
-
     @abstractmethod
     async def execute(self, context): pass
 
-    @handle_queue_error
+    @classmethod
+    async def use_runafter_time(cls):
+        befor = cls.run_after
+        cls.run_after += 30
+        return befor
+
+    @handle_queue_class_error
     async def run_queue(self, context):
         while not self.queue_instance.empty():
             queue_fetch = self.queue_instance.get()
@@ -79,7 +80,7 @@ class CheckAbstract(ABC):
 
         CheckAbstract.is_queue_running = False
 
-    @handle_queue_error
+    @handle_queue_class_error
     async def get_request_id(self, context):
         main_data = context.job.data
         data = copy.deepcopy(main_data)
@@ -88,7 +89,7 @@ class CheckAbstract(ABC):
         domain = data[0]
         await self.check_notif_count(domain)
         get_result = await self.core_instance.get_check_request_id(data[0], data[1])
-        context.job_queue.run_once(Notification().handle_notification, when=12, data={
+        context.job_queue.run_once(Notification().handle_notification, when=15, data={
             'get_result': get_result, 'user_id': user_id, 'domain': domain, 'expect_ping_number': expect_ping_number})
 
         left_queue = [job for job in context.job_queue.jobs() if job.callback == self.get_request_id]
@@ -105,7 +106,7 @@ class CheckAbstract(ABC):
                 'params': (hours_later, domain)}])
 
 class Check10(CheckAbstract):
-    @handle_queue_error
+    @handle_queue_class_error
     async def execute(self, context):
         fetch = await self.core_instance.get_eligible_notification(10)
 
@@ -115,7 +116,7 @@ class Check10(CheckAbstract):
             await self.run_queue(context)
 
 class Check20(CheckAbstract):
-    @handle_queue_error
+    @handle_queue_class_error
     async def execute(self, context):
         fetch = await self.core_instance.get_eligible_notification(20)
         self.queue_instance.put((20, fetch))
@@ -124,7 +125,7 @@ class Check20(CheckAbstract):
             await self.run_queue(context)
 
 class Check30(CheckAbstract):
-    @handle_queue_error
+    @handle_queue_class_error
     async def execute(self, context):
         fetch = await self.core_instance.get_eligible_notification(30)
         self.queue_instance.put((30, fetch))

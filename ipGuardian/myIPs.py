@@ -1,3 +1,5 @@
+import time
+
 from psycopg2 import errorcodes, errors
 from utilities import FindText, handle_functions_error, handle_classes_errors, posgres_manager, get_boolean_emoji
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -32,12 +34,12 @@ async def address_setting(update, context, address_id=None):
         'query': 'SELECT address_name,status FROM Address WHERE addressID = %s', 'params': (address_id,)})
     ft_instance = FindText(update, context)
     text = await ft_instance.find_text('address_detail')
-    text = text.format(get_address_from_db[0][0], get_address_from_db[0][1])
+    text = text.format(get_address_from_db[0][0], get_boolean_emoji.get(get_address_from_db[0][1]))
     change_address_status = 'disable_address' if get_address_from_db[0][1] else 'enable_address'
     keyboard = [
         [InlineKeyboardButton(await ft_instance.find_keyboard('country_notification_config'), callback_data=f'country_notification_config_{address_id}')],
         [InlineKeyboardButton(await ft_instance.find_keyboard(change_address_status), callback_data=f'change_address_satus_{change_address_status}_{address_id}'),
-         [InlineKeyboardButton(await ft_instance.find_keyboard('check_ip_my_ip'), callback_data=f'fullcheck_ip_{address_id}')]],
+         InlineKeyboardButton(await ft_instance.find_keyboard('check_ip_my_ip'), callback_data=f'fullcheck_ip_{address_id}')],
         [InlineKeyboardButton(await ft_instance.find_keyboard('back_button'), callback_data='ip_guardian_menu')]
     ]
     await query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='html')
@@ -151,13 +153,13 @@ class CheckIP:
         previous_text = query.message.text
 
         get_details = posgres_manager.execute('query', {'query': """
-        SELECT ad.address,ra.max_ip_fullcheck_per_day,ad.last_fullcheck_at,ad.fullcheck_count 
+        SELECT ad.address,ra.max_ip_fullcheck_per_day,ad.last_fullcheck_at,ad.fullcheck_count, 
         CASE 
-        WHENE ad.fullcheck_count >= ra.max_ip_fullcheck_per_day 
-        AND NOW() + INTERVAL '12 hours' > ad.last_fullcheck_at 
+        WHEN ad.fullcheck_count >= ra.max_ip_fullcheck_per_day 
+        AND NOW() <= ad.last_fullcheck_at + INTERVAL '12 hours' 
         OR ad.fullcheck_count < ra.max_ip_fullcheck_per_day 
         THEN TRUE ELSE FALSE 
-        END AS address_qualified
+        END AS address_qualified 
         FROM Rank ra JOIN UserDetail ud ON ud.rankID = ra.rankID 
         JOIN Address ad ON ad.addressID = %s 
         WHERE ud.userID = %s""" ,'params': (address_id, user_id)})
@@ -166,37 +168,36 @@ class CheckIP:
         is_address_quilified, address, last_check_time, check_count = get_details[0][4], get_details[0][0], get_details[0][2], get_details[0][3]
 
         if not is_address_quilified:
-            return await query.answer((await ft_instance.find_text('fullcheck_is_limited')).format(check_count, last_check_time))
+            return await query.answer((await ft_instance.find_text('fullcheck_is_limited')).format(check_count, last_check_time), show_alert=True)
 
-        get_run_after_time = await CheckAbstract().use_runafter_time()
-        await query.answer((await ft_instance.find_text('waiting_for_check_address')).format(get_run_after_time + 15))
-        data = {'user_id': user_id, 'address': address, 'query': query, 'message_id': message_id, 'previous_text': previous_text}
+        check_abstract = CheckAbstract
+        get_run_after_time = await check_abstract.use_runafter_time()
+        await query.answer((await ft_instance.find_text('waiting_for_check_address')).format(get_run_after_time + 15), show_alert=True)
+
+        data = {'user_id': user_id, 'address': address, 'address_id': address_id}
         context.job_queue.run_once(self.handle_request, when=get_run_after_time, data=data)
 
     async def handle_request(self, context):
         main_data = context.job.data
         data = copy.deepcopy(main_data)
         user_id = data.get('user_id')
+        address_id = data.get('address_id')
         address = data.get('address')
-        message_id = data.get('message_id')
-        query = data.get('query')
-        await query.answer(await FindText(1, context).find_from_database(user_id, 'waitin_for_check_host'))
         get_result = await self.core_instance.get_check_request_id(address, [])
         context.job_queue.run_once(self.handle_result, when=15, data={
-            'get_result': get_result, 'user_id': user_id, 'message_id': message_id,
-            'previous_text': data.get('previous_text'), 'query': query})
+            'get_result': get_result, 'user_id': user_id, 'address_id': address_id})
 
     @staticmethod
-    async def handle_result(context):
+    async def handle_result(context: ContextTypes.DEFAULT_TYPE):
         data = context.job.data
         result = data.get('get_result')
         user_id = data.get('user_id')
-        message_id = data.get('message_id')
-        previous_text = data.get('previous_text')
-        query = data.get('query')
-        ft_instance = FindText(1, context)
+        address_id = data.get('address_id')
         get_result = RegisterIP()
         final = await get_result.format_ping_checker_text(result)
-        text = previous_text + '\n\n' + final
-        await query.answer(ft_instance.find_from_database(user_id, 'operation_successfull'))
-        await context.bot.edit_message_text(chat_id=user_id, message_id=message_id, text=text)
+        ft_instance = FindText(1, context)
+        posgres_manager.execute('transaction', [{
+            'query': 'UPDATE Address SET last_fullcheck_at = CURRENT_TIMESTAMP, fullcheck_count = fullcheck_count + 1 WHERE addressID = %s',
+            'params': (address_id,)}])
+        keyboard = [[InlineKeyboardButton(await ft_instance.find_from_database(user_id, 'back_button', 'keyboard'), callback_data=f'address_setting_{address_id}')]]
+        await context.bot.send_message(chat_id=user_id, text=final[1], reply_markup=InlineKeyboardMarkup(keyboard))

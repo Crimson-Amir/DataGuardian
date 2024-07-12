@@ -1,9 +1,7 @@
 from posgres_manager import Client
 from private import database_detail
 
-
 a = Client(**database_detail)
-
 
 list_of_commands = [
 
@@ -36,7 +34,7 @@ list_of_commands = [
     referral_link VARCHAR(50),
     membership_status VARCHAR(50),
     discount_code VARCHAR(50),
-    rankID SMALLINT REFERENCES Rank(rankID) DEFAULT 0,
+    rankID SMALLINT REFERENCES Rank(rankID) DEFAULT 1,
     CONSTRAINT fk_referral FOREIGN KEY (entered_with_referral_link) REFERENCES UserDetail(userID) ON DELETE CASCADE
 );
 """},
@@ -51,7 +49,7 @@ list_of_commands = [
     userID BIGINT NOT NULL,
     address VARCHAR(100) NOT NULL,
     address_name VARCHAR(100),
-    fullcheck_count SMALLINT,
+    fullcheck_count SMALLINT DEFAULT 0,
     last_fullcheck_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user FOREIGN KEY (userID) REFERENCES UserDetail(userID) ON DELETE CASCADE,
