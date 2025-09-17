@@ -14,9 +14,16 @@ class Notification:
         country_name = country_and_result[0].split(',')[0]
         posgres_manager.execute('transaction', [{
             'query': """
-            UPDATE AddressNotification_Country_Relation SET status = %s WHERE
-            countryID = (SELECT countryID FROM Country WHERE country_name = %s)
-            AND notifID = (SELECT an.notifID FROM AddressNotification an JOIN Address ad ON ad.address = %s)
+            UPDATE AddressNotification_Country_Relation
+            SET status = %s
+            WHERE countryID IN (
+                SELECT countryID FROM Country WHERE country_name = %s
+            )
+            AND notifID IN (
+                SELECT an.notifID 
+                FROM AddressNotification an 
+                JOIN Address ad ON ad.address = %s
+            );
             """,
             'params': (False, country_name, domain)}])
         PingNotification.force_refresh = True
