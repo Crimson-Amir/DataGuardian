@@ -54,15 +54,15 @@ class ContryNotification:
         get_country_from_db = posgres_manager.execute(
             'query', {
                 'query': """
-                SELECT co.countryID, co.country_name, co.country_short_name, co.city, ac.status  
-                FROM Country co LEFT JOIN AddressNotification_Country_Relation ac ON co.countryID = ac.countryID 
+                SELECT co.countryID, co.country_name, co.country_short_name, co.city, ac.notifID IS NOT NULL  
+                FROM Country co LEFT JOIN AddressNotification_Country_Relation ac ON co.countryID = ac.countryID AND ac.status = %s 
                 AND ac.notifID IN (SELECT notifID FROM AddressNotification WHERE addressID = %s)""",
-                'params': (address_id,)})
-
+                'params': (True, address_id)})
+        
         get_user_rank_detail = posgres_manager.execute('query', {
             'query': "SELECT ra.max_country_per_address FROM Rank ra JOIN UserDetail ud ON ud.rankID = ra.rankID WHERE ud.userID = %s",'params': (user_detail.id,)})
 
-        active_country_count = sum(1 for x in get_country_from_db if x[4] is True)
+        active_country_count = list(map(lambda x: x[4], get_country_from_db)).count(True)
         max_register_allowed = get_user_rank_detail[0][0]
 
         keyboard, add_to_keyboard, allow_register_country, subscribe_for_more = [], [], 'allow', ''
@@ -83,7 +83,7 @@ class ContryNotification:
             return
 
         for country in get_country_from_db:
-            country_status = '✅' if country[4] is True else ''
+            country_status = '✅' if country[4] else ''
             add_to_keyboard.extend([
                 InlineKeyboardButton(f'{countries_and_flags.get(country[1], '')} {country[1]} {country_status}',
                                      callback_data=f'country_ping_notification_{country[0]}__{address_id}__{country[4]}__{allow_register_country}')])
