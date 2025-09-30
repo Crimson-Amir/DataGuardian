@@ -72,6 +72,8 @@ if __name__ == '__main__':
     application.add_handler(CallbackQueryHandler(country_notification.country_ping_notification, pattern='country_ping_notification_(.*)'))
     application.add_handler(CallbackQueryHandler(change_country_status.change_status, pattern='change_address_satus_(.*)'))
     application.add_handler(CallbackQueryHandler(CheckIP().fullcheck_ip, pattern='fullcheck_ip_(.*)'))
+    country_notification = ContryNotification()
+    application.add_handler(CallbackQueryHandler(country_notification.remove_country, pattern='remove_country_(.*)'))
 
     # setting
     application.add_handler(CallbackQueryHandler(setting_menu, pattern='setting_menu'))
