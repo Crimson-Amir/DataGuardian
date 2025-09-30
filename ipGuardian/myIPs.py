@@ -44,7 +44,6 @@ async def address_setting(update, context, address_id=None):
     ]
     await query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='html')
 
-
 class ContryNotification:
     @handle_classes_errors
     async def country_notification_config(self, update, context, address_id=None):
@@ -104,21 +103,54 @@ class ContryNotification:
         status = get_status_from_callback == 'True'
         ft_instance = FindText(update, context)
 
+        # If country is active, show remove option
+        if status:
+            text = await ft_instance.find_text('remove_country_confirm')
+            keyboard = [
+                [InlineKeyboardButton(await ft_instance.find_keyboard('confirm'), 
+                                     callback_data=f'remove_country_{country_id}__{address_id}')],
+                [InlineKeyboardButton(await ft_instance.find_keyboard('back_button'), 
+                                     callback_data=f'country_notification_config_{address_id}')]
+            ]
+            return await query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='html')
+
+        # If country is not active, add it
         if allow_register_country == 'denied' and not status:
             await query.answer(await ft_instance.find_text('access_denied_for_register_country'), show_alert=True)
             return
+        
         try:
             posgres_manager.execute('transaction', [{'query': """
                 INSERT INTO AddressNotification_Country_Relation (countryID, notifID, status) 
                 VALUES (%s, (SELECT notifID FROM AddressNotification WHERE addressID = %s), %s)
                 ON CONFLICT (countryID, notifID) DO UPDATE SET status = EXCLUDED.status
-                """, 'params': (country_id, address_id, not status)}])
+                """, 'params': (country_id, address_id, True)}])
 
             await query.answer(await ft_instance.find_text('operation_successfull'))
             PingNotification.force_refresh = True
         except errors.lookup(errorcodes.NOT_NULL_VIOLATION):
             await query.answer(await ft_instance.find_text('somthing_wrong_in_address'), show_alert=True)
         except Exception: raise
+        finally:
+            return await self.country_notification_config(update, context, address_id=address_id)
+
+    @handle_classes_errors
+    async def remove_country(self, update, context):
+        query = update.callback_query
+        data = query.data.replace('remove_country_', '').split('__')
+        country_id, address_id = int(data[0]), int(data[1])
+        ft_instance = FindText(update, context)
+        
+        try:
+            posgres_manager.execute('transaction', [{
+                'query': 'DELETE FROM AddressNotification_Country_Relation WHERE countryID = %s AND notifID = (SELECT notifID FROM AddressNotification WHERE addressID = %s)',
+                'params': (country_id, address_id)}])
+            
+            await query.answer(await ft_instance.find_text('country_removed'))
+            PingNotification.force_refresh = True
+        except Exception as e:
+            print(e)
+            await query.answer(await ft_instance.find_text('operation_failed'), show_alert=True)
         finally:
             return await self.country_notification_config(update, context, address_id=address_id)
 
