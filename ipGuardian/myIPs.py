@@ -25,7 +25,6 @@ async def ip_guardian_setting_menu(update: Update, context: ContextTypes.DEFAULT
     keyboard.append(back_button)
     await update.callback_query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='html')
 
-
 @handle_functions_error
 async def address_setting(update, context, address_id=None):
     query = update.callback_query
@@ -41,7 +40,7 @@ async def address_setting(update, context, address_id=None):
         [InlineKeyboardButton(await ft_instance.find_keyboard(change_address_status), callback_data=f'change_address_satus_{change_address_status}_{address_id}'),
          InlineKeyboardButton(await ft_instance.find_keyboard('check_ip_my_ip'), callback_data=f'fullcheck_ip_{address_id}')],
         [InlineKeyboardButton(await ft_instance.find_keyboard('remove_address'), callback_data=f'remove_address_confirm_{address_id}')],
-        [InlineKeyboardButton(await ft_instance.find_keyboard('back_button'), callback_data='ip_guardian_setting_menu')]
+        [InlineKeyboardButton(await ft_instance.find_keyboard('back_button'), callback_data='ip_guardian_menu')]
     ]
     await query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='html')
 
