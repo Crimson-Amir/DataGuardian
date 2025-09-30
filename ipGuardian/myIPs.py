@@ -54,10 +54,10 @@ class ContryNotification:
         get_country_from_db = posgres_manager.execute(
             'query', {
                 'query': """
-                SELECT co.countryID, co.country_name, co.country_short_name, co.city, ac.notifID IS NOT NULL  
+                SELECT co.countryID, co.country_name, co.country_short_name, co.city, ac.status  
                 FROM Country co LEFT JOIN AddressNotification_Country_Relation ac ON co.countryID = ac.countryID 
-  AND ac.notifID IN (SELECT notifID FROM AddressNotification WHERE addressID = %s)""",
-                'params': (True, address_id)})
+                AND ac.notifID IN (SELECT notifID FROM AddressNotification WHERE addressID = %s)""",
+                'params': (address_id,)})
 
         get_user_rank_detail = posgres_manager.execute('query', {
             'query': "SELECT ra.max_country_per_address FROM Rank ra JOIN UserDetail ud ON ud.rankID = ra.rankID WHERE ud.userID = %s",'params': (user_detail.id,)})
