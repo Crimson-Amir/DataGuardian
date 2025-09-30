@@ -257,18 +257,25 @@ class RemoveAddress:
         ft_instance = FindText(update, context)
         
         try:
-            # Delete from database (CASCADE will handle related records)
-            posgres_manager.execute('transaction', [{
-                'query': 'DELETE FROM Address WHERE addressID = %s',
-                'params': (address_id,)}])
+            # Delete in correct order to avoid foreign key violations
+            posgres_manager.execute('transaction', [
+                # First delete country relations
+                {'query': 'DELETE FROM AddressNotification_Country_Relation WHERE notifID IN (SELECT notifID FROM AddressNotification WHERE addressID = %s)',
+                 'params': (address_id,)},
+                # Then delete notifications
+                {'query': 'DELETE FROM AddressNotification WHERE addressID = %s',
+                 'params': (address_id,)},
+                # Finally delete the address
+                {'query': 'DELETE FROM Address WHERE addressID = %s',
+                 'params': (address_id,)}
+            ])
             
             await query.answer(await ft_instance.find_text('address_removed'))
             PingNotification.force_refresh = True
             
-            # Redirect to IP list
             return await ip_guardian_setting_menu(update, context)
             
         except Exception as e:
-            print(e)
+            print(f"Error removing address: {e}")
             await query.answer(await ft_instance.find_text('operation_failed'), show_alert=True)
             return await address_setting(update, context, address_id=address_id)
