@@ -45,9 +45,9 @@ class Notification:
         for country_and_result in final[0].items():
             if not isinstance(country_and_result[1], dict): continue
             if country_and_result[1].get('ok_request_count', 0) <= expect_ping_number:
-                if Notification.country_block_count.count(country_and_result[0]) >= 2:
-                    await self.disable_country(country_and_result, domain)
-                else: Notification.country_block_count.append(country_and_result[0])
+                # if Notification.country_block_count.count(country_and_result[0]) >= 2:
+                #     await self.disable_country(country_and_result, domain)
+                # else: Notification.country_block_count.append(country_and_result[0])
                 some_ids_has_problem = True
 
         if some_ids_has_problem:
