@@ -65,6 +65,7 @@ if __name__ == '__main__':
     country_notification = ContryNotification()
     change_country_status = ChangeAddressStatus()
     application.add_handler(add_ip_conversation)
+    remove_address = RemoveAddress()  
 
     application.add_handler(CallbackQueryHandler(ip_guardian_menu, pattern='ip_guardian_menu'))
     application.add_handler(CallbackQueryHandler(ip_guardian_setting_menu, pattern='ip_guardian_setting_menu'))
