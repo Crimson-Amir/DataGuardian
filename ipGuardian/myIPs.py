@@ -39,7 +39,7 @@ async def address_setting(update, context, address_id=None):
         [InlineKeyboardButton(await ft_instance.find_keyboard('country_notification_config'), callback_data=f'country_notification_config_{address_id}')],
         [InlineKeyboardButton(await ft_instance.find_keyboard(change_address_status), callback_data=f'change_address_satus_{change_address_status}_{address_id}'),
          InlineKeyboardButton(await ft_instance.find_keyboard('check_ip_my_ip'), callback_data=f'fullcheck_ip_{address_id}')],
-        [InlineKeyboardButton(await ft_instance.find_keyboard('remove_address'), callback_data=f'remove_country_{address_id}')],
+        [InlineKeyboardButton(await ft_instance.find_keyboard('remove_address'), callback_data=f'remove_address_confirm_{address_id}')],
         [InlineKeyboardButton(await ft_instance.find_keyboard('back_button'), callback_data='ip_guardian_menu')]
     ]
     await query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='html')
@@ -233,3 +233,42 @@ class CheckIP:
             'params': (address_id,)}])
         keyboard = [[InlineKeyboardButton(await ft_instance.find_from_database(user_id, 'back_button', 'keyboard'), callback_data=f'address_setting_{address_id}')]]
         await context.bot.send_message(chat_id=user_id, text=final[1], reply_markup=InlineKeyboardMarkup(keyboard))
+
+class RemoveAddress:
+    @handle_classes_errors
+    async def confirm_remove(self, update, context):
+        query = update.callback_query
+        address_id = int(query.data.replace('remove_address_confirm_', ''))
+        ft_instance = FindText(update, context)
+        
+        text = await ft_instance.find_text('remove_address_confirm')
+        keyboard = [
+            [InlineKeyboardButton(await ft_instance.find_keyboard('confirm'), 
+                                 callback_data=f'remove_address_execute_{address_id}')],
+            [InlineKeyboardButton(await ft_instance.find_keyboard('back_button'), 
+                                 callback_data=f'address_setting_{address_id}')]
+        ]
+        await query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='html')
+
+    @handle_classes_errors
+    async def execute_remove(self, update, context):
+        query = update.callback_query
+        address_id = int(query.data.replace('remove_address_execute_', ''))
+        ft_instance = FindText(update, context)
+        
+        try:
+            # Delete from database (CASCADE will handle related records)
+            posgres_manager.execute('transaction', [{
+                'query': 'DELETE FROM Address WHERE addressID = %s',
+                'params': (address_id,)}])
+            
+            await query.answer(await ft_instance.find_text('address_removed'))
+            PingNotification.force_refresh = True
+            
+            # Redirect to IP list
+            return await ip_guardian_setting_menu(update, context)
+            
+        except Exception as e:
+            print(e)
+            await query.answer(await ft_instance.find_text('operation_failed'), show_alert=True)
+            return await address_setting(update, context, address_id=address_id)
