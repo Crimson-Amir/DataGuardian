@@ -55,8 +55,8 @@ class ContryNotification:
             'query', {
                 'query': """
                 SELECT co.countryID, co.country_name, co.country_short_name, co.city, ac.notifID IS NOT NULL  
-                FROM Country co LEFT JOIN AddressNotification_Country_Relation ac ON co.countryID = ac.countryID AND ac.status = %s 
-                AND ac.notifID IN (SELECT notifID FROM AddressNotification WHERE addressID = %s)""",
+                FROM Country co LEFT JOIN AddressNotification_Country_Relation ac ON co.countryID = ac.countryID 
+  AND ac.notifID IN (SELECT notifID FROM AddressNotification WHERE addressID = %s)""",
                 'params': (True, address_id)})
 
         get_user_rank_detail = posgres_manager.execute('query', {
