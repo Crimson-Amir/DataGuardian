@@ -39,6 +39,7 @@ async def address_setting(update, context, address_id=None):
         [InlineKeyboardButton(await ft_instance.find_keyboard('country_notification_config'), callback_data=f'country_notification_config_{address_id}')],
         [InlineKeyboardButton(await ft_instance.find_keyboard(change_address_status), callback_data=f'change_address_satus_{change_address_status}_{address_id}'),
          InlineKeyboardButton(await ft_instance.find_keyboard('check_ip_my_ip'), callback_data=f'fullcheck_ip_{address_id}')],
+        [InlineKeyboardButton(await ft_instance.find_keyboard('remove_address'), callback_data=f'remove_country_{address_id}')],
         [InlineKeyboardButton(await ft_instance.find_keyboard('back_button'), callback_data='ip_guardian_menu')]
     ]
     await query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='html')
