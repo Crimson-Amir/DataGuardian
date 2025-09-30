@@ -164,13 +164,15 @@ class ChangeAddressStatus:
         text = await ft_instance.find_text('operation_failed')
         try:
             posgres_manager.execute('transaction', [{
-                'query': "UPDATE Address SET status = %s WHERE addressID = %s", 'params': (status, address_id)}])
+                'query': "UPDATE Address SET status = %s WHERE addressID = %s", 
+                'params': (status, address_id)}])
             text = await ft_instance.find_text('operation_successfull')
-        except Exception as e: print(e)
+            PingNotification.force_refresh = True  # Add this line!
+        except Exception as e: 
+            print(e)
         finally:
             await update.callback_query.answer(text)
             return await address_setting(update, context, address_id=address_id)
-
 
 class CheckIP:
     core_instance = PingNotification()
