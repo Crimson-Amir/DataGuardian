@@ -56,7 +56,7 @@ async def cancel_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE
 async def add_ip(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     ft_instance = FindText(update, context)
-
+    if chat_id not in [6450325872]: return await update.callback_query.answer("شما نمیتوانید در این ربات آیپی اضافه کنید!", show_alert=True)
     if not await is_user_eligible_to_add_address(chat_id):
         text = await ft_instance.find_text('access_denied_for_register_address')
         return await update.callback_query.answer(text, show_alert=True)
