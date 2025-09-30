@@ -175,6 +175,11 @@ keyboard_transaction = {
         'en': 'Check IP ↻',
         'fa': 'بررسی آیپی ↺'
     },
+    
+    'remove_address': {
+        'en': 'Remove ✘',
+        'fa': 'حذف ✘'
+    },
     'remove_country': {
         'en': 'Remove ✘',
         'fa': 'حذف ✘'
