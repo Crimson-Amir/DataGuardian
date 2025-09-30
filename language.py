@@ -1,4 +1,12 @@
 text_transaction = {
+    'remove_country_confirm': {
+        'en': 'Are you sure you want to remove this country from monitoring?',
+        'fa': 'آیا مطمئن هستید که میخواهید این کشور را از مانیتورینگ حذف کنید؟'
+    },
+    'country_removed': {
+        'en': 'Country removed successfully✅',
+        'fa': 'کشور با موفقیت حذف شد✅'
+    },
     'user_error_message': {
         'en': 'sorry, somthing went wrong!',
         'fa': 'ببخشید، مشکلی وجود داشت!'
@@ -166,6 +174,14 @@ keyboard_transaction = {
     'check_ip_my_ip': {
         'en': 'Check IP ↻',
         'fa': 'بررسی آیپی ↺'
+    },
+    'remove_country': {
+        'en': 'Remove ✘',
+        'fa': 'حذف ✘'
+    },
+    'confirm': {
+        'en': 'Yes, Remove',
+        'fa': 'بله، حذف کن'
     },
 }
 
