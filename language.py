@@ -1,4 +1,12 @@
 text_transaction = {
+    'remove_address_confirm': {
+        'en': 'Are you sure you want to remove this IP address?\nThis will delete all monitoring data for this address.',
+        'fa': 'آیا مطمئن هستید که میخواهید این آدرس آیپی را حذف کنید؟\nتمام اطلاعات مانیتورینگ این آدرس پاک خواهد شد.'
+    },
+    'address_removed': {
+        'en': 'IP address removed successfully✅',
+        'fa': 'آدرس آیپی با موفقیت حذف شد✅'
+    },
     'remove_country_confirm': {
         'en': 'Are you sure you want to remove this country from monitoring?',
         'fa': 'آیا مطمئن هستید که میخواهید این کشور را از مانیتورینگ حذف کنید؟'
