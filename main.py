@@ -6,7 +6,7 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Callb
 from private import telegram_bot_token
 from ipGuardian.ip_guardian import ip_guardian_menu, add_ip_conversation
 from userSetting import setting_menu
-from ipGuardian.myIPs import ip_guardian_setting_menu, ContryNotification, ChangeAddressStatus,address_setting, CheckIP
+from ipGuardian.myIPs import ip_guardian_setting_menu, ContryNotification, ChangeAddressStatus,address_setting, CheckIP, RemoveAddress
 from user.registerCore import RegisterUser
 from admin.adminTelegram import notify_admin
 import logging
