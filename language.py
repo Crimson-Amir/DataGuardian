@@ -194,7 +194,7 @@ keyboard_transaction = {
     },
     'confirm': {
         'en': 'Yes, Remove',
-        'fa': 'بله، حذف کن'
+        'fa': ' بله، حذف کن'
     },
 }
 
