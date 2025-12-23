@@ -1,0 +1,31 @@
+[Unit]
+Description=DataGuardian Telegram Bot
+After=network.target postgresql.service
+Wants=network.target
+
+[Service]
+Type=simple
+
+# Run as root (you ARE using root)
+User=root
+Group=root
+
+# Project root
+WorkingDirectory=/root/DataGuardian
+
+# Virtualenv python
+ExecStart=/root/DataGuardian/venv/bin/python main.py
+
+# Restart rules
+Restart=always
+RestartSec=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+# Environment safety
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
