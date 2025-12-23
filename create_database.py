@@ -134,7 +134,7 @@ init_country = [
 init_rank = [
     {'query': """
     INSERT INTO Rank (rank_name,rank_score,max_allow_ip_register,max_country_per_address,max_ip_fullcheck_per_day) VALUES 
-    ('ROOKIE', 10, 2, 3, 3)
+    ('ROOKIE', 10, 10, 10, 10)
     """}
 ]
 
@@ -146,9 +146,8 @@ def init():
     a.execute('transaction', init_country)
     a.execute('transaction', init_rank)
 
-
-# init()
 # create()
+# init()
 # print(a.execute('transaction', [{'query': 'drop table Country', 'params': None}]))
 #
 
